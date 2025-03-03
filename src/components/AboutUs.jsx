@@ -6,7 +6,7 @@ import vision from "../assets/vision.png";
 
 const AboutUs = () => {
   return (
-    <div className="w-full">
+    <div id="about" className="w-full">
       {/* Banner Section with Text Overlay */}
       <div className="relative w-full h-[400px]">
         <img 

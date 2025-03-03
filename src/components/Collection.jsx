@@ -33,7 +33,7 @@ const Collection = () => {
   const totalPages = Math.ceil(filteredImages.length / itemsPerPage);
 
   return (
-    <div className="w-full h-screen bg-cover bg-center flex flex-col items-center justify-center" style={{ backgroundImage: `url(${honeycomb})` }}>
+    <div id="collection" className="w-full h-screen bg-cover bg-center flex flex-col items-center justify-center" style={{ backgroundImage: `url(${honeycomb})` }}>
       <div className="w-full flex justify-center relative bottom-10">
         <div className="w-[70%] max-w-[90rem] h-auto bg-white flex flex-col items-center justify-center rounded-[1rem] shadow-lg p-6">
 

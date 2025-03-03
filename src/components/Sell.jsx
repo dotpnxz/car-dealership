@@ -6,7 +6,7 @@ const Sell = () => {
   const [fileName, setFileName] = useState("No file chosen");
 
   return (
-    <div className="w-full">
+    <div id="sell" className="w-full">
       {/* Banner Section with Text Overlay */}
       <div className="relative w-full h-[500px]">
         <img 

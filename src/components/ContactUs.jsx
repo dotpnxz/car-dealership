@@ -3,7 +3,7 @@ import contact from "../assets/contact.png";
 
 const ContactUs = () => {
   return (
-    <div className="w-full">
+    <div id="contact" className="w-full">
       {/* Banner Section */}
       <div className="relative w-full h-[350px]">
         <img 
@@ -26,7 +26,7 @@ const ContactUs = () => {
   <div className="lg:w-1/2 relative bottom-[5rem]">
     <h1 className="text-4xl font-bold mb-[5rem]">SEND US A MESSAGE!</h1>
     <p className="text-lg">
-      Got questions? Let’s talk! Whether it’s about our latest car models, pricing, or scheduling a test drive, we’re just a message away.
+      Got questions? Let's talk! Whether it's about our latest car models, pricing, or scheduling a test drive, we're just a message away.
     </p>
   </div>
 

@@ -1,37 +1,98 @@
-import React, { useState } from "react";
-import mjLogo from "../assets/mj-logo.jpg"; // Adjust the path if needed
+import React from "react";
+import { NavLink } from "react-router-dom";
+import mjLogo from "../assets/mj-logo.jpg";
 
 const Navbar = () => {
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const navbarHeight = 128; // 8rem = 128px
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
 
   return (
-    <div className="sticky top-0 bg-[#800000] text-white h-25 flex justify-between items-center px-6 shadow-lg z-50">
-      {/* Logo + Text */}
-      <div className="flex items-center space-x-3 pl-50">
-      <img src={mjLogo} alt="MJ Logo" className="h-20 w-20 rounded-full" />
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">
-            <span className="text-yellow-500">MJ</span>-
-            <span className="text-white">AUTO</span>
-            <span className="text-yellow-500">LOVE</span>
-          </h1>
-          <div className="w-full flex justify-end">
-            <h2 className="text-white text-lg font-semibold">VEHICLE TRADING</h2>
+    <nav className="sticky top-0 bg-[#800000] text-white w-full z-50">
+      <div className="max-w-[1440px] mx-auto  flex justify-between items-center h-[8rem]">
+        {/* Logo Section */}
+        <div className="flex items-center space-x-2">
+          <img src={mjLogo} alt="MJ Logo" className="h-20 w-20 rounded-full" />
+          <div>
+            <h1 className="text-3xl font-bold">
+              <span className="text-yellow-500">MJ</span>-
+              <span className="text-white">AUTO</span>
+              <span className="text-yellow-500">LOVE</span>
+            </h1>
+            <p className="tex-3xl">VEHICLE TRADING</p>
           </div>
         </div>
-      </div>
 
-      {/* Navigation Links */}
-      <div className="flex justify-between items-center h-24 max-w-[1240px] mx-auto px-4 text-white">
-      <ul className="hidden md:flex ml-100 font-poppins text-[1.1rem]">
-        <li className="p-4">Home</li>
-        <li className="p-4">About Us</li>
-        <li className="p-4">Sell</li>
-        <li className="p-4">Book A Visit</li>
-        <li className="p-4">Location</li>
-        <li className="p-4">Contact Us</li>
-      </ul>
+        {/* Navigation Links */}
+        <div className="flex items-center font-semi-bold text-2xl">
+          <ul className="flex space-x-8">
+            <li>
+              <NavLink 
+                to="/" 
+                className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
+                onClick={() => scrollToSection('home')}
+              >
+                Home
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/about" 
+                className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
+                onClick={() => scrollToSection('about')}
+              >
+                About Us
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/sell" 
+                className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
+                onClick={() => scrollToSection('sell')}
+              >
+                Sell
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/book-visit" 
+                className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
+              >
+                Book A Visit
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/collection" 
+                className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
+                onClick={() => scrollToSection('collection')}
+              >
+                Collection
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/contact" 
+                className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
+                onClick={() => scrollToSection('contact')}
+              >
+                Contact Us
+              </NavLink>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
+    </nav>
   );
 };
 
