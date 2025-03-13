@@ -82,6 +82,15 @@ const Navbar = () => {
             </li>
             <li>
               <NavLink 
+                to="/location" 
+                className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
+                onClick={() => scrollToSection('location')}
+              >
+                Location
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
                 to="/contact" 
                 className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
                 onClick={() => scrollToSection('contact')}

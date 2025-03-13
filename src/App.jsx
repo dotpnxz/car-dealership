@@ -7,6 +7,7 @@ import Sell from './components/Sell';
 import AboutUs from './components/AboutUs';
 import ContactUs from './components/ContactUs';
 import BookVisit from './components/BookVisit';
+import Location from './components/Location';
 import Footer from './components/Footer';
 
 const MainContent = () => {
@@ -37,6 +38,7 @@ const MainContent = () => {
             <Collection />
             <Sell />
             <AboutUs />
+            <Location />
             <ContactUs />
           </>
         } />
