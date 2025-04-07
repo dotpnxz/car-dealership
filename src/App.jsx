@@ -1,5 +1,5 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Collection from './components/Collection';
@@ -9,7 +9,10 @@ import ContactUs from './components/ContactUs';
 import BookVisit from './components/BookVisit';
 import Location from './components/Location';
 import Footer from './components/Footer';
-
+import ReserveNow from './components/reservenow'; // Fixed import
+import Recommendation from './components/recommendation'; 
+import RegistrationForm from './components/RegistrationForm'; 
+import LoginForm from './components/LoginForm'; 
 const MainContent = () => {
   const location = useLocation();
 
@@ -32,6 +35,10 @@ const MainContent = () => {
     <main className="flex-grow">
       <Routes>
         <Route path="/book-visit" element={<BookVisit />} />
+        <Route path="/reservenow" element={<ReserveNow />} />
+        <Route path="/recommendation" element={<Recommendation />} />
+        <Route path="/RegistrationForm" element={<RegistrationForm />} />
+        <Route path="/LoginForm" element={<LoginForm />} />
         <Route path="*" element={
           <>
             <Home />
@@ -56,7 +63,7 @@ const App = () => {
         <Footer />
       </Router>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;

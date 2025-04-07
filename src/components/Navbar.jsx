@@ -34,7 +34,7 @@ const Navbar = () => {
         </div>
 
         {/* Navigation Links */}
-        <div className="flex items-center font-semi-bold text-2xl">
+        <div className="flex items-center font-semi-bold text-2xl relative left-[6rem]">
           <ul className="flex space-x-8">
             <li>
               <NavLink 
@@ -96,6 +96,24 @@ const Navbar = () => {
                 onClick={() => scrollToSection('contact')}
               >
                 Contact Us
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/RegistrationForm" 
+                className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
+                onClick={() => scrollToSection('RegistrationForm')}
+              >
+                Register
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/LoginForm"
+                className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
+                onClick={() => scrollToSection('contact')}
+              >
+                Login
               </NavLink>
             </li>
           </ul>
