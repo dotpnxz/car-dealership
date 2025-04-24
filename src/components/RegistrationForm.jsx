@@ -13,6 +13,8 @@ const RegistrationForm = () => {
     gender: '',
     address: '',
   });
+  const [registrationStatus, setRegistrationStatus] = useState(null); // To display success/error messages
+  const [errors, setErrors] = useState({}); // To display validation errors
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,10 +25,82 @@ const RegistrationForm = () => {
     setFormData({ ...formData, gender: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form Data Submitted:', formData);
-    // Add your submission logic here
+
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      setRegistrationStatus({ 
+        success: false, 
+        message: 'Passwords do not match.' 
+      });
+      return;
+    }
+
+    // Prepare data for submission (remove confirmPassword)
+    const submitData = {
+      ...formData,
+      confirmPassword: undefined // Remove confirmPassword from submission
+    };
+
+    console.log('Submitting data:', submitData);
+
+    try {
+      const response = await fetch('http://localhost/car-dealership/api/register.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new TypeError("Response was not JSON");
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (data.success) {
+        setRegistrationStatus({ success: true, message: data.message });
+        setErrors({});
+        // Clear the form on successful registration
+        setFormData({
+          fullname: '',
+          username: '',
+          password: '',
+          confirmPassword: '',
+          birthDay: '',
+          birthMonth: '',
+          birthYear: '',
+          contactNo: '+63',
+          gender: '',
+          address: '',
+        });
+      } else {
+        setRegistrationStatus({ success: false, message: data.message });
+        setErrors(data.errors || {});
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setRegistrationStatus({ 
+        success: false, 
+        message: 'An error occurred during registration. Please try again.' 
+      });
+      setErrors({});
+    }
   };
 
   const handleClear = () => {
@@ -42,6 +116,8 @@ const RegistrationForm = () => {
       gender: '',
       address: '',
     });
+    setRegistrationStatus(null); // Clear any previous status messages
+    setErrors({}); // Clear any previous errors
   };
 
   const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
@@ -56,6 +132,18 @@ const RegistrationForm = () => {
       <div className="bg-white p-8 rounded-md shadow-md w-full max-w-md">
         <h2 className="text-xl font-semibold mb-4 text-gray-700">Registration Form</h2>
         <p className="text-sm text-gray-500 mb-4">Fill out the form carefully for registration</p>
+        {registrationStatus && (
+          <div className={`mb-4 p-3 rounded ${registrationStatus.success ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+            {registrationStatus.message}
+            {Object.keys(errors).length > 0 && (
+              <ul className="list-disc pl-5 mt-2">
+                {Object.values(errors).map((error, index) => (
+                  <li key={index} className="text-sm">{error}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="fullname" className="block text-gray-700 text-sm font-bold mb-2">
@@ -69,6 +157,7 @@ const RegistrationForm = () => {
               onChange={handleChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
+            {errors.fullname && <p className="text-red-500 text-xs italic">{errors.fullname}</p>}
           </div>
           <div className="mb-4">
             <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">
@@ -82,6 +171,7 @@ const RegistrationForm = () => {
               onChange={handleChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
+            {errors.username && <p className="text-red-500 text-xs italic">{errors.username}</p>}
           </div>
           <div className="mb-4 grid grid-cols-2 gap-2">
             <div>
@@ -96,6 +186,7 @@ const RegistrationForm = () => {
                 onChange={handleChange}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
+              {errors.password && <p className="text-red-500 text-xs italic">{errors.password}</p>}
             </div>
             <div>
               <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-bold mb-2">
@@ -109,6 +200,7 @@ const RegistrationForm = () => {
                 onChange={handleChange}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
+              {errors.confirmPassword && <p className="text-red-500 text-xs italic">{errors.confirmPassword}</p>}
             </div>
           </div>
           <div className="mb-4">
@@ -135,7 +227,7 @@ const RegistrationForm = () => {
               >
                 <option value="">Month</option>
                 {months.map((month, index) => (
-                  <option key={index} value={month}>{month}</option>
+                  <option key={index} value={index + 1}>{month}</option>
                 ))}
               </select>
               <select
@@ -150,6 +242,7 @@ const RegistrationForm = () => {
                 ))}
               </select>
             </div>
+            {errors.birthday && <p className="text-red-500 text-xs italic">{errors.birthday}</p>}
           </div>
           <div className="mb-4">
             <label htmlFor="contactNo" className="block text-gray-700 text-sm font-bold mb-2">
@@ -164,6 +257,7 @@ const RegistrationForm = () => {
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               placeholder="+63-000-000-0000"
             />
+            {errors.contactNo && <p className="text-red-500 text-xs italic">{errors.contactNo}</p>}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -193,6 +287,7 @@ const RegistrationForm = () => {
                 <span className="ml-2 text-gray-700">Female</span>
               </label>
             </div>
+            {errors.gender && <p className="text-red-500 text-xs italic">{errors.gender}</p>}
           </div>
           <div className="mb-4">
             <label htmlFor="address" className="block text-gray-700 text-sm font-bold mb-2">
@@ -206,6 +301,7 @@ const RegistrationForm = () => {
               onChange={handleChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
+            {errors.address && <p className="text-red-500 text-xs italic">{errors.address}</p>}
           </div>
           <div className="flex justify-end space-x-2">
             <button

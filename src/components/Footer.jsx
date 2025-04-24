@@ -58,8 +58,7 @@ const Footer = () => {
           <div>
             <h6 className='font-medium text-2xl'>Great Deals Await – Stop By Today!</h6>
             <ul className="space-y-1 mt-2 text-sm">
-              <li>Mon - Fri: 9:00 AM - 6:00 PM</li>
-              <li>Sat - Sun: 10:00 AM - 4:00 PM</li>
+              <li>Mon - Sat: 8:00 AM - 5:00 PM</li>
             </ul>
           </div>
           
