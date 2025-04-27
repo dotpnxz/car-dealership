@@ -24,11 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Start session
 session_start();
 
-// Check if user is logged in and is admin or staff
-if (!isset($_SESSION['user_id']) || ($_SESSION['accountType'] !== 'admin' && $_SESSION['accountType'] !== 'staff')) {
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
     ob_clean();
     http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized access']);
+    echo json_encode(['error' => 'Please login to view the collection']);
     exit();
 }
 

@@ -35,6 +35,12 @@ const AdminLayout = () => {
                     <Link to="/admin/bookings" className={`mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md ${isActive('/admin/bookings')}`}>
                         Booking Management
                     </Link>
+                    <Link to="/admin/reserved-cars" className={`mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md ${isActive('/admin/reserved-cars')}`}>
+                        Reserved Cars
+                    </Link>
+                    <Link to="/admin/reservations" className={`mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md ${isActive('/admin/reservations')}`}>
+                        Reservation List
+                    </Link>
                     <Link to="/admin/profile" className={`mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md ${isActive('/admin/profile')}`}>
                         My Profile
                     </Link>
@@ -57,6 +63,8 @@ const AdminLayout = () => {
                             {location.pathname === '/admin/users' && 'User Management'}
                             {location.pathname === '/admin/cars' && 'Car Management'}
                             {location.pathname === '/admin/bookings' && 'Booking Management'}
+                            {location.pathname === '/admin/reserved-cars' && 'Reserved Cars Management'}
+                            {location.pathname === '/admin/reservations' && 'Reservation List Management'}
                             {location.pathname === '/admin/profile' && 'My Profile'}
                         </h1>
                         <div className="flex items-center">

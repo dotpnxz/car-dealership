@@ -72,7 +72,7 @@ const CarManagement = () => {
 
             // Add images
             images.forEach((file, index) => {
-                formDataToSend.append(`images[${index}]`, file);
+                        formDataToSend.append(`images[${index}]`, file);
             });
 
             const response = await fetch('http://localhost/car-dealership/api/add_car.php', {
@@ -358,112 +358,112 @@ const CarManagement = () => {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Title</label>
-                                        <input
-                                            type="text"
-                                            name="title"
-                                            value={formData.title}
-                                            onChange={handleInputChange}
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        value={formData.title}
+                                        onChange={handleInputChange}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            required
-                                        />
-                                    </div>
+                                        required
+                                    />
+                                </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Price</label>
-                                        <input
+                                    <input
                                             type="text"
-                                            name="price"
-                                            value={formData.price}
-                                            onChange={handleInputChange}
+                                        name="price"
+                                        value={formData.price}
+                                        onChange={handleInputChange}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            required
-                                        />
-                                    </div>
+                                        required
+                                    />
+                                </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Category</label>
                                         <input
                                             type="text"
-                                            name="category"
-                                            value={formData.category}
-                                            onChange={handleInputChange}
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={handleInputChange}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            required
+                                        required
                                         />
-                                    </div>
+                                </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Brand</label>
                                         <input
                                             type="text"
-                                            name="brand"
-                                            value={formData.brand}
-                                            onChange={handleInputChange}
+                                        name="brand"
+                                        value={formData.brand}
+                                        onChange={handleInputChange}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            required
+                                        required
                                         />
-                                    </div>
+                                </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Variant</label>
-                                        <input
-                                            type="text"
-                                            name="variant"
-                                            value={formData.variant}
-                                            onChange={handleInputChange}
+                                    <input
+                                        type="text"
+                                        name="variant"
+                                        value={formData.variant}
+                                        onChange={handleInputChange}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            required
-                                        />
-                                    </div>
+                                        required
+                                    />
+                                </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Mileage</label>
-                                        <input
-                                            type="text"
-                                            name="mileage"
-                                            value={formData.mileage}
-                                            onChange={handleInputChange}
+                                    <input
+                                        type="text"
+                                        name="mileage"
+                                        value={formData.mileage}
+                                        onChange={handleInputChange}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            required
-                                        />
-                                    </div>
+                                        required
+                                    />
+                                </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Transmission</label>
                                         <input
                                             type="text"
-                                            name="transmission"
-                                            value={formData.transmission}
-                                            onChange={handleInputChange}
+                                        name="transmission"
+                                        value={formData.transmission}
+                                        onChange={handleInputChange}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            required
+                                        required
                                         />
-                                    </div>
+                                </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Condition</label>
                                         <input
                                             type="text"
-                                            name="condition"
-                                            value={formData.condition}
-                                            onChange={handleInputChange}
+                                        name="condition"
+                                        value={formData.condition}
+                                        onChange={handleInputChange}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            required
+                                        required
                                         />
-                                    </div>
+                                </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Seating</label>
-                                        <input
-                                            type="text"
-                                            name="seating"
-                                            value={formData.seating}
-                                            onChange={handleInputChange}
+                                    <input
+                                        type="text"
+                                        name="seating"
+                                        value={formData.seating}
+                                        onChange={handleInputChange}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            required
-                                        />
-                                    </div>
+                                        required
+                                    />
+                                </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">Images</label>
-                                        <input
-                                            type="file"
+                                    <input
+                                        type="file"
                                             multiple
-                                            onChange={handleFileChange}
+                                        onChange={handleFileChange}
                                             className="mt-1 block w-full"
-                                            accept="image/*"
-                                        />
+                                        accept="image/*"
+                                    />
                                     </div>
                                 </div>
                                 <div className="mt-6 flex justify-end space-x-3">

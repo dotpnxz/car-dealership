@@ -19,10 +19,12 @@ import AdminLayout from './layouts/AdminLayout';
 import UserManagement from './components/UserManagement';
 import CarManagement from './components/CarManagement';
 import BookingManagement from './components/BookingManagement';
+import ReservedCars from './components/ReservedCars';
 import StaffLayout from './layouts/StaffLayout';
 import StaffDashboard from './components/StaffDashboard';
 import UserProfile from './components/UserProfile';
 import UserDashboard from './components/UserDashboard';
+import ReservationList from './components/ReservationList';
 
 const MainContent = () => {
     const location = useLocation();
@@ -50,7 +52,7 @@ const MainContent = () => {
                 <Routes>
                     <Route path="/home" element={<Home />} />
                     <Route path="/book-visit" element={<BookVisit />} />
-                    <Route path="/reservenow" element={<ReserveNow />} />
+                    <Route path="/reservenow/:id?" element={<ReserveNow />} />
                     <Route path="/recommendation" element={<Recommendation />} />
                     <Route path="/RegistrationForm" element={<RegistrationForm />} />
                     <Route path="/LoginForm" element={<LoginForm />} />   
@@ -75,6 +77,8 @@ const MainContent = () => {
                         <Route path="users" element={<UserManagement />} />
                         <Route path="cars" element={<CarManagement />} />
                         <Route path="bookings" element={<BookingManagement />} />
+                        <Route path="reserved-cars" element={<ReservedCars />} />
+                        <Route path="reservations" element={<ReservationList />} />
                         <Route path="profile" element={<Profile />} />
                     </Route>
 
