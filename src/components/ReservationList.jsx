@@ -4,10 +4,50 @@ import { AuthContext } from './AuthContext';
 
 const ReservationList = () => {
     const navigate = useNavigate();
-    const { isLoggedIn, userId } = React.useContext(AuthContext);
+    const { isLoggedIn, userId, accountType } = React.useContext(AuthContext);
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const updateReservationStatus = async (reservationId, newStatus) => {
+        try {
+            const response = await fetch('http://localhost/car-dealership/api/update_reservation_status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    reservation_id: reservationId,
+                    status: newStatus
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update status');
+            }
+
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update the local state
+                setReservations(prevReservations => 
+                    prevReservations.map(reservation => 
+                        reservation.id === reservationId 
+                            ? { ...reservation, status: newStatus }
+                            : reservation
+                    )
+                );
+            } else {
+                throw new Error(data.error || 'Failed to update status');
+            }
+        } catch (err) {
+            console.error('Error updating status:', err);
+            setError(err.message);
+        }
+    };
 
     useEffect(() => {
         if (!isLoggedIn) {
@@ -78,7 +118,7 @@ const ReservationList = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">Reservations</h1>
+                <h1 className="text-3xl font-bold">My Reservations</h1>
                 <button
                     onClick={() => navigate('/')}
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -114,14 +154,61 @@ const ReservationList = () => {
                                 <div>
                                     <p className="text-gray-600">Status</p>
                                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${
-                                        reservation.status === 'reserved' ? 'bg-yellow-100 text-yellow-800' :
-                                        reservation.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                        reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                        reservation.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                                        reservation.status === 'reserved' ? 'bg-purple-100 text-purple-800' :
+                                        reservation.status === 'acquired' ? 'bg-green-100 text-green-800' :
                                         'bg-red-100 text-red-800'
                                     }`}>
                                         {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
                                     </span>
                                 </div>
                             </div>
+
+                            {accountType === 'admin' && (
+                                <div className="mt-6 flex flex-wrap gap-2">
+                                    <button
+                                        onClick={() => updateReservationStatus(reservation.id, 'confirmed')}
+                                        className={`px-3 py-1 rounded text-sm font-semibold ${
+                                            reservation.status === 'confirmed' 
+                                                ? 'bg-blue-500 text-white' 
+                                                : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                                        }`}
+                                    >
+                                        Confirm
+                                    </button>
+                                    <button
+                                        onClick={() => updateReservationStatus(reservation.id, 'reserved')}
+                                        className={`px-3 py-1 rounded text-sm font-semibold ${
+                                            reservation.status === 'reserved' 
+                                                ? 'bg-purple-500 text-white' 
+                                                : 'bg-purple-100 text-purple-800 hover:bg-purple-200'
+                                        }`}
+                                    >
+                                        Reserve
+                                    </button>
+                                    <button
+                                        onClick={() => updateReservationStatus(reservation.id, 'acquired')}
+                                        className={`px-3 py-1 rounded text-sm font-semibold ${
+                                            reservation.status === 'acquired' 
+                                                ? 'bg-green-500 text-white' 
+                                                : 'bg-green-100 text-green-800 hover:bg-green-200'
+                                        }`}
+                                    >
+                                        Acquire
+                                    </button>
+                                    <button
+                                        onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
+                                        className={`px-3 py-1 rounded text-sm font-semibold ${
+                                            reservation.status === 'cancelled' 
+                                                ? 'bg-red-500 text-white' 
+                                                : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                        }`}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

@@ -64,7 +64,7 @@ try {
             contactNo, 
             address, 
             status
-        ) VALUES (?, ?, ?, ?, ?, ?, 'reserved')
+        ) VALUES (?, ?, ?, ?, ?, ?, 'pending')
     ");
 
     $stmt->execute([
