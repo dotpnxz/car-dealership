@@ -118,7 +118,7 @@ const ReservationList = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold">My Reservations</h1>
+                <h1 className="text-3xl font-bold">Reservations</h1>
                 <button
                     onClick={() => navigate('/')}
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"

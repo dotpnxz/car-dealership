@@ -1,63 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Search } from "lucide-react";
 import honeycomb from "../assets/honeycomb.png";
-import homecar from "../assets/home-car.png";
-import XLEfront from "../assets/Toyota/XLE/XLE_front.JPEG";
-import XLE1 from "../assets/Toyota/XLE/XLE1.JPEG";
-import XLE2 from "../assets/Toyota/XLE/XLE2.JPEG";
-import XLE3 from "../assets/Toyota/XLE/XLE3.JPEG";
-import XLE4 from "../assets/Toyota/XLE/XLE4.JPEG";
-import XLE5 from "../assets/Toyota/XLE/XLE5.JPEG";
-import XLE6 from "../assets/Toyota/XLE/XLE6.JPEG";
-import XLE7 from "../assets/Toyota/XLE/XLE7.JPEG";
-
 import { Link } from "react-router-dom";
 
-const images = [
-  // Toyota
-  { src: XLEfront, title: "2022 Toyota Vios XLE", price: "₱1,200,000.00", category: "SUV", brand: "Toyota", 
-  variant: "2.4 G", mileage: "15,000KM", transmission: "Automatic", condition: "Used", seating: "7 seater",
-   images: [XLE1, XLE2, XLE3, XLE4, XLE5, XLE6, XLE7] },
-  { src: homecar, title: "2021 Toyota Innova E (Automatic)", price: "₱650,000.00", category: "Sedan", brand: "Toyota",
-  variant: "1.3 E", mileage: "10,000KM", transmission: "Automatic", condition: "Used", seating: "5 seater", images: [homecar, homecar] },
-  { src: homecar, title: "2019 Toyota Hiace Commuter", price: "₱950,000.00", category: "MPV", brand: "Toyota",
-  variant: "2.8 V", mileage: "20,000KM", transmission: "Automatic", condition: "Used", seating: "7 seater", images: [homecar, homecar] },
-  
-  // Suzuki
-  { src: homecar, title: "2024 Suzuki Dzire GL", price: "₱750,000.00", category: "MPV", brand: "Suzuki",
-     variant: "1.5 GL", mileage: "12,000KM", transmission: "Automatic", condition: "Used", seating: "7 seater", images: [homecar, homecar] },
-  { src: homecar, title: "2023 Suzuki Carry", price: "₱1,100,000.00", category: "SUV", brand: "Suzuki", 
-    variant: "1.4 GLX", mileage: "18,000KM", transmission: "Automatic", condition: "Used", seating: "5 seater", images: [homecar, homecar] },
-  { src: homecar, title: "2019 Suzuki Carry", price: "₱1,100,000.00", category: "SUV", brand: "Suzuki", 
-    variant: "1.4 GLX", mileage: "18,000KM", transmission: "Automatic", condition: "Used", seating: "5 seater", images: [homecar, homecar] },
-
-  // Nissan
-  { src: homecar, title: "2024 Nissan Livina VL", price: "₱950,000.00", category: "Truck", brand: "Nissan", 
-    variant: "2.5 Calibre", mileage: "25,000KM", transmission: "Automatic", condition: "Used", seating: "5 seater", images: [homecar, homecar] },
-  { src: homecar, title: "2023 Nissan Livina VE", price: "₱1,300,000.00", category: "SUV", brand: "Nissan", 
-    variant: "2.5 VL", mileage: "15,000KM", transmission: "Automatic", condition: "Used", seating: "7 seater", images: [homecar, homecar] },
-  { src: homecar, title: "2018 Nissan Juke", price: "₱1,300,000.00", category: "SUV", brand: "Nissan", 
-    variant: "2.5 VL", mileage: "15,000KM", transmission: "Automatic", condition: "Used", seating: "7 seater", images: [homecar, homecar] },
-
-  // Mitsubishi
-  { src: homecar, title: "2023 Mitsubishi Mirage GLS", price: "₱1,100,000.00", category: "SUV", brand: "Mitsubishi", variant: "2.4 GLS", mileage: "20,000KM", transmission: "Automatic", condition: "Used", seating: "7 seater", images: [homecar, homecar] },
-
-  // Hyundai
-  { src: homecar, title: "2023 Hyundai Stargazer GL", price: "₱1,100,000.00", category: "SUV", brand: "Hyundai", 
-    variant: "1.6 GL", mileage: "18,000KM", transmission: "Automatic", condition: "Used", seating: "5 seater", images: [homecar, homecar] },
-  { src: homecar, title: "2023 Hyundai Creta 2.5 GL", price: "₱1,200,000.00", category: "Van", brand: "Hyundai", 
-    variant: "2.5 CRDi", mileage: "30,000KM", transmission: "Automatic", condition: "Used", seating: "12 seater", images: [homecar, homecar] },
-
-  // Honda
-  { src: homecar, title: "2019 Honda City VX", price: "₱875,000.00", category: "Sedan", brand: "Honda", 
-    variant: "1.8 E", mileage: "12,000KM", transmission: "Automatic", condition: "Used", seating: "5 seater", images: [homecar, homecar] },
-  { src: homecar, title: "2016 Honda CR-V", price: "₱1,400,000.00", category: "SUV", brand: "Honda", 
-    variant: "1.6 S", mileage: "15,000KM", transmission: "Automatic", condition: "Used", seating: "5 seater", images: [homecar, homecar] },
-
-  // Ford
-  { src: homecar, title: "2019 Ford Ranger XLT", price: "₱1,300,000.00", category: "SUV", brand: "Ford", 
-    variant: "2.0 Titanium", mileage: "20,000KM", transmission: "Automatic", condition: "Used", seating: "7 seater", images: [homecar, homecar] },
-];
 
 const Collection = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
