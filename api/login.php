@@ -28,6 +28,27 @@ session_start([
     'cookie_samesite' => 'Lax'
 ]);
 
+// Check if this is just a session verification request
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (isset($_SESSION['user_id']) && isset($_SESSION['accountType'])) {
+        echo json_encode([
+            'success' => true,
+            'isLoggedIn' => true,
+            'user' => [
+                'id' => $_SESSION['user_id'],
+                'username' => $_SESSION['username'],
+                'accountType' => $_SESSION['accountType']
+            ]
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'isLoggedIn' => false
+        ]);
+    }
+    exit();
+}
+
 try {
     $servername = "localhost";
     $username = "root";
@@ -83,7 +104,6 @@ try {
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['accountType'] = $user['accountType'];
-    $_SESSION['fullname'] = $user['fullname'];
 
     // Debug: Log session data
     error_log("Login successful. Session data: " . print_r($_SESSION, true));
@@ -96,7 +116,6 @@ try {
         'user' => [
             'id' => $user['id'],
             'username' => $user['username'],
-            'fullname' => $user['fullname'],
             'accountType' => $user['accountType']
         ]
     ]);

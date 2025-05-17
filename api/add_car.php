@@ -41,9 +41,12 @@ try {
         `brand` VARCHAR(50) NOT NULL,
         `variant` VARCHAR(50) NOT NULL,
         `mileage` VARCHAR(50) NOT NULL,
+        `chassis` VARCHAR(50) NOT NULL,
         `transmission` VARCHAR(50) NOT NULL,
+        `fuel_type` VARCHAR(50) NOT NULL,
         `condition` VARCHAR(50) NOT NULL,
         `seating` INT NOT NULL,
+        `issues` TEXT,
         `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
 
@@ -57,7 +60,11 @@ try {
     )");
     
     // Validate required fields
-    $required_fields = ['title', 'price', 'category', 'brand', 'variant', 'mileage', 'transmission', 'condition', 'seating'];
+    $required_fields = [
+        'title', 'price', 'category', 'brand', 'variant', 
+        'mileage', 'chassis', 'transmission', 'fuel_type', 
+        'condition', 'seating'
+    ]; // Note: 'issues' is optional
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || empty($_POST[$field])) {
             throw new Exception("Missing required field: $field");
@@ -68,10 +75,12 @@ try {
     $stmt = $conn->prepare("
         INSERT INTO cars (
             title, price, category, brand, variant, 
-            mileage, transmission, `condition`, seating
+            mileage, chassis, transmission, fuel_type,
+            `condition`, seating, issues
         ) VALUES (
             :title, :price, :category, :brand, :variant,
-            :mileage, :transmission, :condition, :seating
+            :mileage, :chassis, :transmission, :fuel_type,
+            :condition, :seating, :issues
         )
     ");
 
@@ -83,9 +92,12 @@ try {
         ':brand' => $_POST['brand'],
         ':variant' => $_POST['variant'],
         ':mileage' => $_POST['mileage'],
+        ':chassis' => $_POST['chassis'],
         ':transmission' => $_POST['transmission'],
+        ':fuel_type' => $_POST['fuel_type'],
         ':condition' => $_POST['condition'],
-        ':seating' => $_POST['seating']
+        ':seating' => $_POST['seating'],
+        ':issues' => $_POST['issues'] ?? null
     ]);
 
     // Get the ID of the newly inserted car
@@ -139,4 +151,4 @@ try {
     http_response_code(400);
     echo json_encode(['error' => $e->getMessage()]);
 }
-?> 
+?>

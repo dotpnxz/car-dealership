@@ -1,0 +1,533 @@
+{
+  "NCR": {
+    "province_list": {
+      "Metro Manila": {
+        "municipality_list": {
+          "Manila": [],
+          "Quezon City": [],
+          "Makati": [],
+          "Pasig": [],
+          "Taguig": [],
+          "Pasay": [],
+          "Parañaque": [],
+          "Caloocan": [],
+          "Muntinlupa": [],
+          "Las Piñas": [],
+          "Mandaluyong": [],
+          "Marikina": [],
+          "San Juan": [],
+          "Valenzuela": [],
+          "Navotas": [],
+          "Malabon": [],
+          "Pateros": [],
+          "Antipolo": [],
+          "Bacoor": [],
+          "Imus": []
+        }
+      }
+    }
+  },
+  "CAR": {
+    "province_list": {
+      "Benguet": {
+        "municipality_list": {
+          "Baguio City": [],
+          "La Trinidad": [],
+          "Tuba": [],
+          "Itogon": [],
+          "Sablan": [],
+          "Tublay": [],
+          "Bokod": [],
+          "Kabayan": [],
+          "Bakun": [],
+          "Mankayan": [],
+          "Buguias": [],
+          "Kibungan": [],
+          "Kapangan": [],
+          "Atok": []
+        }
+      },
+      "Mountain Province": {
+        "municipality_list": {
+          "Bontoc": [],
+          "Sagada": []
+        }
+      },
+      "Ifugao": {
+        "municipality_list": {
+          "Lagawe": [],
+          "Kiangan": [],
+          "Lamut": [],
+          "Alfonso Lista": [],
+          "Mayoyao": [],
+          "Aguinaldo": [],
+          "Hungduan": [],
+          "Banaue": [],
+          "Hingyon": [],
+          "Tinoc": [],
+          "Asipulo": []
+        }
+      }
+    }
+  },
+  "Region I": {
+    "province_list": {
+      "Ilocos Norte": {
+        "municipality_list": {
+          "Laoag": [],
+          "Batac": []
+        }
+      },
+      "Ilocos Sur": {
+        "municipality_list": {
+          "Vigan": [],
+          "Candon": []
+        }
+      },
+      "La Union": {
+        "municipality_list": {
+          "San Fernando": [],
+          "Agoo": []
+        }
+      },
+      "Pangasinan": {
+        "municipality_list": {
+          "Dagupan": [],
+          "Urdaneta": []
+        }
+      }
+    }
+  },
+  "Region II": {
+    "province_list": {
+      "Cagayan": {
+        "municipality_list": {
+          "Tuguegarao": [],
+          "Aparri": []
+        }
+      },
+      "Isabela": {
+        "municipality_list": {
+          "Ilagan": [],
+          "Santiago": []
+        }
+      }
+    }
+  },
+  "Region III": {
+    "province_list": {
+      "Bulacan": {
+        "municipality_list": {
+          "Malolos": [],
+          "Meycauayan": [],
+          "San Jose del Monte": [],
+          "Marilao": [],
+          "Obando": [],
+          "Bocaue": [],
+          "Guiguinto": [],
+          "Plaridel": [],
+          "Calumpit": [],
+          "Balagtas": [],
+          "Pandi": [],
+          "Bustos": [],
+          "Norzagaray": [],
+          "Santa Maria": [],
+          "Paombong": [],
+          "Hagonoy": [],
+          "Pulilan": [],
+          "Angat": [],
+          "Dona Remedios Trinidad": []
+        }
+      },
+      "Nueva Ecija": {
+        "municipality_list": {
+          "Cabanatuan": [],
+          "San Jose": [],
+          "Gapan": []
+        }
+      },
+      "Pampanga": {
+        "municipality_list": {
+          "San Fernando": [],
+          "Angeles": [],
+          "Mabalacat": [],
+          "Magalang": [],
+          "Apalit": [],
+          "Arayat": [],
+          "Bacolor": [],
+          "Candaba": [],
+          "Floridablanca": [],
+          "Guagua": [],
+          "Lubao": [],
+          "Macabebe": [],
+          "Masantol": [],
+          "Mexico": [],
+          "Minalin": [],
+          "Porac": [],
+          "San Luis": [],
+          "San Simon": [],
+          "Santa Ana": [],
+          "Santa Rita": [],
+          "Santo Tomas": [],
+          "Sasmuan": []
+        }
+      },
+      "Tarlac": {
+        "municipality_list": {
+          "Tarlac City": [],
+          "Concepcion": []
+        }
+      },
+      "Zambales": {
+        "municipality_list": {
+          "Olongapo": [],
+          "Subic": []
+        }
+      },
+      "Bataan": {
+        "municipality_list": {
+          "Balanga": [],
+          "Mariveles": []
+        }
+      }
+    }
+  },
+  "Region IV-A": {
+    "province_list": {
+      "Cavite": {
+        "municipality_list": {
+          "Bacoor": [],
+          "Imus": [],
+          "Dasmariñas": [],
+          "Kawit": [],
+          "General Trias": [],
+          "Tanza": [],
+          "Silang": [],
+          "Carmona": [],
+          "General Mariano Alvarez": [],
+          "Rosario": [],
+          "Noveleta": [],
+          "Cavite City": [],
+          "Tagaytay": [],
+          "Alfonso": [],
+          "Amadeo": [],
+          "General Emilio Aguinaldo": [],
+          "Indang": [],
+          "Magallanes": [],
+          "Maragondon": [],
+          "Mendez": [],
+          "Naic": [],
+          "Ternate": []
+        }
+      },
+      "Laguna": {
+        "municipality_list": {
+          "Santa Rosa": [],
+          "Calamba": [],
+          "San Pedro": [],
+          "Biñan": [],
+          "Cabuyao": [],
+          "Los Baños": [],
+          "San Pablo": [],
+          "Alaminos": [],
+          "Bay": [],
+          "Calauan": [],
+          "Cavinti": [],
+          "Famy": [],
+          "Kalayaan": [],
+          "Liliw": [],
+          "Luisiana": [],
+          "Lumban": [],
+          "Mabitac": [],
+          "Magdalena": [],
+          "Majayjay": [],
+          "Nagcarlan": [],
+          "Paete": [],
+          "Pagsanjan": [],
+          "Pakil": [],
+          "Pangil": [],
+          "Pila": [],
+          "Rizal": [],
+          "Santa Cruz": [],
+          "Santa Maria": [],
+          "Siniloan": [],
+          "Victoria": []
+        }
+      },
+      "Batangas": {
+        "municipality_list": {
+          "Batangas City": [],
+          "Lipa": [],
+          "Tanauan": []
+        }
+      },
+      "Rizal": {
+        "municipality_list": {
+          "Antipolo": [],
+          "Taytay": [],
+          "Cainta": []
+        }
+      },
+      "Quezon": {
+        "municipality_list": {
+          "Lucena": [],
+          "Tayabas": []
+        }
+      }
+    }
+  },
+  "Region IV-B": {
+    "province_list": {
+      "Oriental Mindoro": {
+        "municipality_list": {
+          "Calapan": [],
+          "Puerto Galera": []
+        }
+      },
+      "Palawan": {
+        "municipality_list": {
+          "Puerto Princesa": [],
+          "Coron": []
+        }
+      }
+    }
+  },
+  "Region V": {
+    "province_list": {
+      "Albay": {
+        "municipality_list": {
+          "Legazpi": [],
+          "Daraga": [],
+          "Tabaco City": [],
+          "Ligao City": [],
+          "Guinobatan": [],
+          "Camalig": [],
+          "Sto. Domingo": [],
+          "Malilipot": [],
+          "Malinao": [],
+          "Tiwi": [],
+          "Bacacay": [],
+          "Oas": [],
+          "Polangui": [],
+          "Libon": [],
+          "Manito": [],
+          "Rapu-Rapu": [],
+          "Jovellar": [],
+          "Pio Duran": []
+        }
+      },
+      "Camarines Sur": {
+        "municipality_list": {
+          "Naga": [],
+          "Iriga": [],
+          "Pili": [],
+          "Calabanga": [],
+          "Libmanan": [],
+          "Sipocot": [],
+          "Goa": [],
+          "Tigaon": [],
+          "Buhi": [],
+          "Nabua": [],
+          "Baao": [],
+          "Bato": [],
+          "Balatan": [],
+          "Bula": [],
+          "Camaligan": [],
+          "Canaman": [],
+          "Caramoan": [],
+          "Del Gallego": []
+        }
+      }
+    }
+  },
+  "Region VI": {
+    "province_list": {
+      "Iloilo": {
+        "municipality_list": {
+          "Iloilo City": [],
+          "Oton": [],
+          "Pavia": [],
+          "Leganes": [],
+          "Santa Barbara": [],
+          "Cabatuan": [],
+          "Maasin": [],
+          "Janiuay": [],
+          "Lambunao": [],
+          "Calinog": [],
+          "Barotac Nuevo": [],
+          "Dumangas": [],
+          "Zarraga": [],
+          "New Lucena": [],
+          "San Miguel": [],
+          "Alimodian": [],
+          "Leon": [],
+          "Tubungan": []
+        }
+      },
+      "Negros Occidental": {
+        "municipality_list": {
+          "Bacolod": [],
+          "Silay": [],
+          "Talisay City": [],
+          "Bago City": [],
+          "La Carlota City": [],
+          "San Carlos City": [],
+          "Kabankalan City": [],
+          "Himamaylan City": [],
+          "Sagay City": [],
+          "Cadiz City": [],
+          "Victorias City": [],
+          "Escalante City": [],
+          "Binalbagan": [],
+          "Hinigaran": [],
+          "La Castellana": []
+        }
+      }
+    }
+  },
+  "Region VII": {
+    "province_list": {
+      "Cebu": {
+        "municipality_list": {
+          "Cebu City": [],
+          "Mandaue": [],
+          "Lapu-Lapu": [],
+          "Talisay City": [],
+          "Danao City": [],
+          "Toledo City": [],
+          "Carcar City": [],
+          "Naga City": [],
+          "Minglanilla": [],
+          "Consolacion": [],
+          "Liloan": [],
+          "Cordova": [],
+          "Argao": [],
+          "Dalaguete": [],
+          "Badian": [],
+          "Moalboal": [],
+          "Alcoy": [],
+          "Santander": [],
+          "Oslob": [],
+          "Bogo City": [],
+          "San Fernando": []
+        }
+      },
+      "Bohol": {
+        "municipality_list": {
+          "Tagbilaran": [],
+          "Panglao": [],
+          "Dauis": [],
+          "Baclayon": [],
+          "Loboc": [],
+          "Carmen": [],
+          "Tubigon": [],
+          "Loon": [],
+          "Calape": [],
+          "Jagna": [],
+          "Talibon": [],
+          "Ubay": [],
+          "Trinidad": [],
+          "Inabanga": [],
+          "Candijay": [],
+          "Anda": [],
+          "Guindulman": [],
+          "Valencia": []
+        }
+      }
+    }
+  },
+  "Region VIII": {
+    "province_list": {
+      "Leyte": {
+        "municipality_list": {
+          "Tacloban": [],
+          "Ormoc": []
+        }
+      }
+    }
+  },
+  "Region IX": {
+    "province_list": {
+      "Zamboanga del Sur": {
+        "municipality_list": {
+          "Zamboanga City": [],
+          "Pagadian": []
+        }
+      }
+    }
+  },
+  "Region X": {
+    "province_list": {
+      "Misamis Oriental": {
+        "municipality_list": {
+          "Cagayan de Oro": [],
+          "Gingoog": []
+        }
+      }
+    }
+  },
+  "Region XI": {
+    "province_list": {
+      "Davao del Sur": {
+        "municipality_list": {
+          "Davao City": [],
+          "Digos": [],
+          "Malalag": [],
+          "Sulop": [],
+          "Santa Cruz": [],
+          "Bansalan": [],
+          "Magsaysay": [],
+          "Hagonoy": [],
+          "Padada": [],
+          "Kiblawan": [],
+          "Matanao": []
+        }
+      },
+      "Davao Oriental": {
+        "municipality_list": {
+          "Mati City": [],
+          "Lupon": [],
+          "Banaybanay": [],
+          "San Isidro": [],
+          "Governor Generoso": [],
+          "Manay": [],
+          "Caraga": [],
+          "Baganga": [],
+          "Cateel": [],
+          "Boston": [],
+          "Tarragona": []
+        }
+      }
+    }
+  },
+  "Region XII": {
+    "province_list": {
+      "South Cotabato": {
+        "municipality_list": {
+          "General Santos": [],
+          "Koronadal": []
+        }
+      }
+    }
+  },
+  "Region XIII": {
+    "province_list": {
+      "Agusan del Norte": {
+        "municipality_list": {
+          "Butuan": [],
+          "Cabadbaran": []
+        }
+      }
+    }
+  },
+  "BARMM": {
+    "province_list": {
+      "Lanao del Sur": {
+        "municipality_list": {
+          "Marawi": [],
+          "Malabang": []
+        }
+      }
+    }
+  }
+}

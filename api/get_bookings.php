@@ -52,9 +52,21 @@ try {
             b.created_at,
             b.cancellation_reason,
             b.assigned_to,
-            u.fullname as customer_name,
+            CONCAT(
+                COALESCE(u.firstName, ''), ' ',
+                COALESCE(u.secondName, ''), ' ',
+                COALESCE(u.middleName, ''), ' ',
+                COALESCE(u.surname, ''),
+                CASE WHEN u.suffix IS NOT NULL AND u.suffix != '' THEN CONCAT(' ', u.suffix) ELSE '' END
+            ) as customer_name,
             u.contactNo as customer_phone,
-            s.fullname as staff_name
+            CONCAT(
+                COALESCE(s.firstName, ''), ' ',
+                COALESCE(s.secondName, ''), ' ',
+                COALESCE(s.middleName, ''), ' ',
+                COALESCE(s.surname, ''),
+                CASE WHEN s.suffix IS NOT NULL AND s.suffix != '' THEN CONCAT(' ', s.suffix) ELSE '' END
+            ) as staff_name
         FROM bookings b
         JOIN users u ON b.user_id = u.id
         LEFT JOIN users s ON b.assigned_to = s.id
@@ -92,4 +104,4 @@ try {
     echo json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
     exit();
 }
-?> 
+?>

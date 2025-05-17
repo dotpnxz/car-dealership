@@ -20,6 +20,10 @@ const BookingManagement = () => {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancellationReason, setCancellationReason] = useState('');
     const [bookingToCancel, setBookingToCancel] = useState(null);
+    const [sortField, setSortField] = useState('booking_date');
+    const [sortDirection, setSortDirection] = useState('desc');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [bookingsPerPage] = useState(10);
 
     useEffect(() => {
         fetchBookings();
@@ -242,6 +246,71 @@ const BookingManagement = () => {
         return matchesSearch && matchesStatus && matchesDate && matchesAssigned;
     });
 
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('desc');
+        }
+    };
+
+    const sortedBookings = filteredBookings.sort((a, b) => {
+        // First apply status priority if sorting by status
+        if (sortField === 'status') {
+            const statusPriority = {
+                'pending': 0,
+                'confirmed': 1,
+                'completed': 2,
+                'cancelled': 3
+            };
+            const comparison = statusPriority[a.status] - statusPriority[b.status];
+            return sortDirection === 'asc' ? comparison : -comparison;
+        }
+
+        // Sort by date
+        if (sortField === 'booking_date') {
+            const dateA = new Date(a.booking_date + ' ' + a.booking_time);
+            const dateB = new Date(b.booking_date + ' ' + b.booking_time);
+            return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+        }
+
+        return 0;
+    });
+
+    const indexOfLastBooking = currentPage * bookingsPerPage;
+    const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
+    const currentBookings = sortedBookings.slice(indexOfFirstBooking, indexOfLastBooking);
+    const totalPages = Math.ceil(sortedBookings.length / bookingsPerPage);
+
+    const Pagination = () => (
+        <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4 px-4">
+            <div className="text-xs sm:text-sm text-gray-700 order-2 sm:order-1">
+                Showing {indexOfFirstBooking + 1} to {Math.min(indexOfLastBooking, sortedBookings.length)} of {sortedBookings.length} entries
+            </div>
+            <div className="flex space-x-2 order-1 sm:order-2">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded ${currentPage === 1 
+                        ? 'bg-gray-100 text-gray-400' 
+                        : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                    Previous
+                </button>
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded ${currentPage === totalPages 
+                        ? 'bg-gray-100 text-gray-400' 
+                        : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                    Next
+                </button>
+            </div>
+        </div>
+    );
+
     if (loading && bookings.length === 0) {
         return (
             <div className="flex justify-center items-center min-h-screen">
@@ -251,190 +320,179 @@ const BookingManagement = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 p-8">
+        <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
             <div className="max-w-7xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Booking Management</h1>
-                    <div className="flex space-x-4">
-                        <div className="relative">
+                {/* Header Section */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Booking Management</h1>
+                    
+                    {/* Filter Controls - Stack on mobile */}
+                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                        <div className="relative w-full sm:w-64">
                             <input
                                 type="text"
                                 placeholder="Search bookings..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="border rounded px-3 py-2 pl-10 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border rounded px-3 py-2 pl-10"
                             />
-                            <svg
-                                className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
+                            <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="border rounded px-3 py-2"
-                        >
-                            <option value="all">All Statuses</option>
-                            <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
-                        <input
-                            type="date"
-                            value={dateFilter}
-                            onChange={(e) => setDateFilter(e.target.value)}
-                            className="border rounded px-3 py-2"
-                        />
-                        {accountType === 'admin' && (
+                        
+                        <div className="grid grid-cols-2 sm:flex gap-2">
                             <select
-                                value={assignedToFilter}
-                                onChange={(e) => setAssignedToFilter(e.target.value)}
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
                                 className="border rounded px-3 py-2"
                             >
-                                <option value="">All Staff</option>
-                                <option value="unassigned">Unassigned</option>
-                                {/* Add staff members dynamically */}
+                                <option value="all">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
                             </select>
-                        )}
+                            
+                            <input
+                                type="date"
+                                value={dateFilter}
+                                onChange={(e) => setDateFilter(e.target.value)}
+                                className="border rounded px-3 py-2"
+                            />
+                        </div>
                     </div>
                 </div>
 
-                {error && (
-                    <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                            <span>{error}</span>
-                        </div>
-                    </div>
-                )}
-
-                {showSuccess && (
-                    <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                        <div className="flex items-center">
-                            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <span>{successMessage}</span>
-                        </div>
-                    </div>
-                )}
-
+                {/* Table Section */}
                 <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Customer
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Car
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date & Time
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Notes
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredBookings.map((booking) => (
-                                <tr key={booking.id}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
-                                            {booking.customer_name}
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Customer
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Car
+                                    </th>
+                                    <th 
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                        onClick={() => handleSort('booking_date')}
+                                    >
+                                        <div className="flex items-center">
+                                            Date & Time
+                                            {sortField === 'booking_date' && (
+                                                <span className="ml-2">
+                                                    {sortDirection === 'asc' ? '↑' : '↓'}
+                                                </span>
+                                            )}
                                         </div>
-                                      
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
-                                            {booking.car_make} {booking.car_model}
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Notes
+                                    </th>
+                                    <th 
+                                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                        onClick={() => handleSort('status')}
+                                    >
+                                        <div className="flex items-center">
+                                            Status
+                                            {sortField === 'status' && (
+                                                <span className="ml-2">
+                                                    {sortDirection === 'asc' ? '↑' : '↓'}
+                                                </span>
+                                            )}
                                         </div>
-                                        <div className="text-sm text-gray-500">
-                                            {booking.car_year}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900">
-                                            {formatDate(booking.booking_date)} {booking.booking_time}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                                            {booking.notes || 'No notes'}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                            ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
-                                            booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                            booking.status === 'completed' ? 'bg-blue-100 text-blue-800' : 
-                                            'bg-red-100 text-red-800'}`}>
-                                            {booking.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button
-                                            onClick={() => openDetailsModal(booking)}
-                                            className="text-blue-600 hover:text-blue-900 mr-3"
-                                        >
-                                            Details
-                                        </button>
-                                        {booking.status === 'pending' && (
-                                            <>
-                                                <button
-                                                    onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
-                                                    className="text-green-600 hover:text-green-900 mr-3"
-                                                >
-                                                    Confirm
-                                                </button>
-                                                <button
-                                                    onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
-                                                    className="text-red-600 hover:text-red-900 mr-3"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </>
-                                        )}
-                                        {booking.status === 'confirmed' && (
-                                            <button
-                                                onClick={() => handleStatusUpdate(booking.id, 'completed')}
-                                                className="text-blue-600 hover:text-blue-900 mr-3"
-                                            >
-                                                Complete
-                                            </button>
-                                        )}
-                                        {accountType === 'admin' && !booking.assigned_to && (
-                                            <button
-                                                onClick={() => openAssignModal(booking)}
-                                                className="text-purple-600 hover:text-purple-900"
-                                            >
-                                                Assign
-                                            </button>
-                                        )}
-                                    </td>
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {currentBookings.map((booking) => (
+                                    <tr key={booking.id}>
+                                        <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {booking.customer_name}
+                                            </div>
+                                      
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {booking.car_make} {booking.car_model}
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                                {booking.car_year}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">
+                                                {formatDate(booking.booking_date)} {booking.booking_time}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3 sm:py-4">
+                                            <div className="text-sm text-gray-900 max-w-xs truncate">
+                                                {booking.notes || 'No notes'}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
+                                                booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                                booking.status === 'completed' ? 'bg-blue-100 text-blue-800' : 
+                                                'bg-red-100 text-red-800'}`}>
+                                                {booking.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                                            <div className="flex flex-col sm:flex-row gap-2">
+                                                <button
+                                                    onClick={() => openDetailsModal(booking)}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                >
+                                                    Details
+                                                </button>
+                                                {booking.status === 'pending' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
+                                                            className="text-green-600 hover:text-green-900"
+                                                        >
+                                                            Confirm
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
+                                                            className="text-red-600 hover:text-red-900"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {booking.status === 'confirmed' && (
+                                                    <button
+                                                        onClick={() => handleStatusUpdate(booking.id, 'completed')}
+                                                        className="text-blue-600 hover:text-blue-900"
+                                                    >
+                                                        Complete
+                                                    </button>
+                                                )}
+                                                {accountType === 'admin' && !booking.assigned_to && booking.status === 'confirmed' && (
+                                                    <button
+                                                        onClick={() => openAssignModal(booking)}
+                                                        className="text-purple-600 hover:text-purple-900"
+                                                    >
+                                                        Assign
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 {/* Loading overlay for table operations */}
@@ -446,8 +504,8 @@ const BookingManagement = () => {
 
                 {/* Booking Details Modal */}
                 {showDetailsModal && selectedBooking && (
-                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-                        <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full p-4">
+                        <div className="relative top-20 mx-auto p-4 sm:p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-medium">Booking Details</h3>
                                 <button onClick={() => setShowDetailsModal(false)} className="text-gray-400 hover:text-gray-500">
@@ -470,6 +528,9 @@ const BookingManagement = () => {
                                     <p className="text-sm text-gray-600">Date: {formatDate(selectedBooking.booking_date)}</p>
                                     <p className="text-sm text-gray-600">Status: {selectedBooking.status}</p>
                                     <p className="text-sm text-gray-600">Reason: {selectedBooking.cancellation_reason}</p>
+                                    <p className="text-sm text-gray-600">
+                                        Assigned To: {selectedBooking.staff_name || 'Not Assigned'}
+                                    </p>
                                 </div>
                                 {selectedBooking.notes && (
                                     <div>
@@ -485,7 +546,7 @@ const BookingManagement = () => {
                 {/* Add Assign Modal */}
                 {showAssignModal && selectedBookingForAssignment && (
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-                        <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div className="relative top-20 mx-auto p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-medium">Assign Booking</h3>
                                 <button 
@@ -518,7 +579,7 @@ const BookingManagement = () => {
                 {/* Add Cancel Modal */}
                 {showCancelModal && (
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-                        <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div className="relative top-20 mx-auto p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-medium">Cancel Booking</h3>
                                 <button 
@@ -565,9 +626,36 @@ const BookingManagement = () => {
                         </div>
                     </div>
                 )}
+
+                {/* Pagination with mobile-friendly layout */}
+                <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4 px-4">
+                    <div className="text-xs sm:text-sm text-gray-700 order-2 sm:order-1">
+                        Showing {indexOfFirstBooking + 1} to {Math.min(indexOfLastBooking, sortedBookings.length)} of {sortedBookings.length} entries
+                    </div>
+                    <div className="flex space-x-2 order-1 sm:order-2">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className={`px-3 py-1 rounded ${currentPage === 1 
+                                ? 'bg-gray-100 text-gray-400' 
+                                : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                        >
+                            Previous
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className={`px-3 py-1 rounded ${currentPage === totalPages 
+                                ? 'bg-gray-100 text-gray-400' 
+                                : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
 };
 
-export default BookingManagement; 
+export default BookingManagement;

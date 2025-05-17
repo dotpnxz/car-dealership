@@ -23,7 +23,6 @@ try {
     $userId = $data['user_id'];
     $title = $data['title'];
 
-    // Get database connection
     $conn = db_connect();
     
     // Check if we're using the correct database
@@ -39,14 +38,72 @@ try {
     ");
     $tableCheck->execute([$dbName]);
     $tableExists = $tableCheck->fetch(PDO::FETCH_ASSOC)['count'] > 0;
-    error_log("Table exists check: " . ($tableExists ? 'Yes' : 'No'));
     
     if (!$tableExists) {
-        throw new Exception('Reservations table not found in database: ' . $dbName);
+        // Create the table if it doesn't exist
+        $conn->exec("
+            CREATE TABLE IF NOT EXISTS reserved_cars (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                car_id INT NOT NULL,
+                user_id INT NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                fullname VARCHAR(255),
+                contactNo VARCHAR(50),
+                address TEXT,
+                status VARCHAR(50) DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ");
+        error_log("Created reserved_cars table");
     }
 
-    // Get user details
-    $stmt = $conn->prepare("SELECT fullname, contactNo, address FROM users WHERE id = ?");
+    // Check if the car is already reserved
+    $checkStmt = $conn->prepare("SELECT COUNT(*) FROM reserved_cars WHERE car_id = ? AND status = 'Reserved'");
+    $checkStmt->execute([$carId]);
+    $reservationCount = $checkStmt->fetchColumn();
+
+    if ($reservationCount > 0) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'This car is already reserved.'
+        ]);
+        exit;
+    }
+
+    // Check if user already has a pending/confirmed reservation for THIS specific car
+    $userCheckStmt = $conn->prepare("SELECT COUNT(*) FROM reserved_cars WHERE car_id = ? AND user_id = ? AND (status = 'pending' OR status = 'Reserved')");
+    $userCheckStmt->execute([$carId, $userId]);
+    $userReservationCount = $userCheckStmt->fetchColumn();
+
+    if ($userReservationCount > 0) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'You already have a reservation for this car.'
+        ]);
+        exit;
+    }
+
+    // Get user details with concatenated name and address
+    $stmt = $conn->prepare("
+        SELECT 
+            TRIM(CONCAT_WS(' ',
+                COALESCE(surname, ''),
+                COALESCE(firstName, ''),
+                COALESCE(secondName, ''),
+                COALESCE(middleName, ''),
+                COALESCE(suffix, '')
+            )) as fullname,
+            contactNo,
+            TRIM(CONCAT_WS(', ',
+                COALESCE(streetAddress, ''),
+                COALESCE(city, ''),
+                COALESCE(province, ''),
+                COALESCE(zipCode, '')
+            )) as address
+        FROM users 
+        WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -76,13 +133,14 @@ try {
         $user['address']
     ]);
 
-    // Log the successful insertion
-    error_log("Reservation created successfully for user {$userId} and car {$carId}");
-    error_log("Last inserted ID: " . $conn->lastInsertId());
+    // Don't update car status until admin approves
+    // Remove or comment out the following lines:
+    // $updateStmt = $conn->prepare("UPDATE cars SET status = 'reserved' WHERE id = ?");
+    // $updateStmt->execute([$carId]);
 
     echo json_encode([
         'success' => true,
-        'message' => 'R                                                                 ',
+        'message' => 'Reservation created successfully',
         'debug' => [
             'database' => $dbName,
             'table_exists' => $tableExists ? 'Yes' : 'No',
@@ -98,4 +156,5 @@ try {
         'success' => false,
         'error' => $e->getMessage()
     ]);
-} 
+}
+?>

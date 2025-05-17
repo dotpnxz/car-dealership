@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
+import usePhLocations from '../hooks/usePhLocations';
 
 const UserManagement = () => {
     const { isLoggedIn, accountType } = useContext(AuthContext);
@@ -14,16 +15,39 @@ const UserManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [formData, setFormData] = useState({
         username: '',
+        surname: '',
+        firstName: '',
+        secondName: '',
+        middleName: '',
         fullname: '',
         contactNo: '',
         gender: '',
         birthDay: '',
         birthMonth: '',
         birthYear: '',
-        address: '',
-        accountType: 'user'
+        streetAddress: '',
+        city: '',
+        province: '',
+        zipCode: '',
+        address: '', // This will store the combined address
+        accountType: 'buyer',
+        suffix: ''
     });
     const [success, setSuccess] = useState('');
+
+    const { regions, getProvincesByRegion, getCitiesByProvince } = usePhLocations();
+    const [selectedRegion, setSelectedRegion] = useState('');
+    const [selectedProvince, setSelectedProvince] = useState('');
+    const [availableProvinces, setAvailableProvinces] = useState([]);
+    const [availableCities, setAvailableCities] = useState([]);
+
+    // Reset location state when modals are closed
+    const resetLocationState = () => {
+        setSelectedRegion('');
+        setSelectedProvince('');
+        setAvailableProvinces([]);
+        setAvailableCities([]);
+    };
 
     useEffect(() => {
         if (!isLoggedIn || accountType !== 'admin') {
@@ -32,6 +56,21 @@ const UserManagement = () => {
         }
         fetchUsers();
     }, [isLoggedIn, accountType, navigate]);
+
+    useEffect(() => {
+        if (selectedRegion) {
+            const provinces = getProvincesByRegion(selectedRegion);
+            setAvailableProvinces(provinces);
+            setSelectedProvince('');
+            setAvailableCities([]);
+        }
+    }, [selectedRegion, getProvincesByRegion]);
+
+    useEffect(() => {
+        if (selectedProvince) {
+            setAvailableCities(getCitiesByProvince(selectedProvince));
+        }
+    }, [selectedProvince]);
 
     const fetchUsers = async () => {
         try {
@@ -77,29 +116,47 @@ const UserManagement = () => {
                 body: JSON.stringify(formData)
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to add user');
+            let data;
+            try {
+                const text = await response.text();
+                console.log('Raw response:', text); // Debug log
+                data = JSON.parse(text);
+            } catch (error) {
+                console.error('Parse error:', error);
+                throw new Error('Invalid server response');
             }
 
-            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to add user');
+            }
+
             setShowAddModal(false);
+            resetLocationState();
             setFormData({
                 username: '',
+                surname: '',
+                firstName: '',
+                secondName: '',
+                middleName: '',
                 fullname: '',
                 contactNo: '',
                 gender: '',
                 birthDay: '',
                 birthMonth: '',
                 birthYear: '',
+                streetAddress: '',
+                city: '',
+                province: '',
+                zipCode: '',
                 address: '',
-                accountType: 'user'
+                accountType: 'buyer',
+                suffix: ''
             });
             fetchUsers();
             alert(`User added successfully! Generated password: ${data.password}`);
         } catch (error) {
             console.error('Error adding user:', error);
-            alert(error.message);
+            alert(error.message || 'Failed to add user');
         }
     };
 
@@ -131,6 +188,7 @@ const UserManagement = () => {
 
             setSuccess(data.message);
             setShowEditModal(false);
+            resetLocationState();
             fetchUsers(); // Refresh the user list
         } catch (error) {
             setError(error.message);
@@ -139,45 +197,133 @@ const UserManagement = () => {
     };
 
     const handleDeleteUser = async (userId) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            try {
-                const response = await fetch('http://localhost/car-dealership/api/delete_user.php', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ id: userId })
-                });
+        if (!window.confirm('Are you sure you want to delete this user?')) {
+            return;
+        }
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to delete user');
-                }
+        try {
+            const response = await fetch('http://localhost/car-dealership/api/delete_user.php', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: userId })
+            });
 
-                // Refresh the user list
-                fetchUsers();
-            } catch (error) {
-                console.error('Error deleting user:', error);
-                alert(error.message);
+            let data;
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                throw new Error('Server returned invalid response format');
             }
+
+            if (!response.ok) {
+                throw new Error(data.error || `Failed to delete user (${response.status})`);
+            }
+
+            alert('User deleted successfully');
+            await fetchUsers();
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert(error.message || 'Failed to delete user');
         }
     };
 
     const openEditModal = (user) => {
         setSelectedUser(user);
+        
+        // Safely handle fullname splitting
+        const nameParts = (user.fullname || '').split(' ');
+        let surname = nameParts[0] || '';
+        let firstName = nameParts[1] || '';
+        let secondName = '';
+        let middleName = '';
+        let suffix = '';
+
+        // Handle suffix if present (comma separated)
+        const fullnameParts = user.fullname.split(',');
+        if (fullnameParts.length > 1) {
+            suffix = fullnameParts[1].trim();
+            // Re-split the name without suffix
+            const nameWithoutSuffix = fullnameParts[0].split(' ');
+            surname = nameWithoutSuffix[0] || '';
+            firstName = nameWithoutSuffix[1] || '';
+            if (nameWithoutSuffix.length > 3) {
+                secondName = nameWithoutSuffix.slice(2, -1).join(' ');
+                middleName = nameWithoutSuffix[nameWithoutSuffix.length - 1];
+            } else if (nameWithoutSuffix.length === 3) {
+                middleName = nameWithoutSuffix[2];
+            }
+        }
+
         setFormData({
-            username: user.username,
-            fullname: user.fullname,
-            contactNo: user.contactNo,
-            gender: user.gender,
-            birthDay: user.birthDay,
-            birthMonth: user.birthMonth,
-            birthYear: user.birthYear,
-            address: user.address,
-            accountType: user.accountType
+            username: user.username || '',
+            surname,
+            firstName,
+            secondName,
+            middleName,
+            fullname: user.fullname || '',
+            contactNo: user.contactNo || '',
+            gender: user.gender || '',
+            birthDay: user.birthDay || '',
+            birthMonth: user.birthMonth || '',
+            birthYear: user.birthYear || '',
+            streetAddress: user.streetAddress || '',
+            city: user.city || '',
+            province: user.province || '',
+            zipCode: user.zipCode || '',
+            address: user.address || '',
+            accountType: user.accountType || 'buyer',
+            suffix
         });
+        
+        // Find and set region based on province
+        const matchingRegion = regions.find(region => {
+            const provincesList = getProvincesByRegion(region);
+            return provincesList.includes(user.province);
+        });
+
+        if (matchingRegion) {
+            setSelectedRegion(matchingRegion);
+            setAvailableProvinces(getProvincesByRegion(matchingRegion));
+            setSelectedProvince(user.province);
+            setAvailableCities(getCitiesByProvince(user.province));
+        }
+
         setShowEditModal(true);
+    };
+
+    const handleCloseAddModal = () => {
+        setShowAddModal(false);
+        resetLocationState();
+        setFormData({
+            username: '',
+            surname: '',
+            firstName: '',
+            secondName: '',
+            middleName: '',
+            fullname: '',
+            contactNo: '',
+            gender: '',
+            birthDay: '',
+            birthMonth: '',
+            birthYear: '',
+            streetAddress: '',
+            city: '',
+            province: '',
+            zipCode: '',
+            address: '',
+            accountType: 'buyer',
+            suffix: ''
+        });
+    };
+
+    const handleCloseEditModal = () => {
+        setShowEditModal(false);
+        resetLocationState();
+        setSelectedUser(null);
     };
 
     // Add search filter function
@@ -192,6 +338,47 @@ const UserManagement = () => {
             user.accountType.toLowerCase().includes(searchLower)
         );
     });
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [usersPerPage] = useState(10);
+
+    // Calculate pagination values
+    const indexOfLastUser = currentPage * usersPerPage;
+    const indexOfFirstUser = indexOfLastUser - usersPerPage;
+    const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
+    const Pagination = () => (
+        <div className="flex justify-between items-center mt-4 px-4">
+            <div className="text-sm text-gray-700">
+                Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} entries
+            </div>
+            <div className="flex space-x-2">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded ${currentPage === 1 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                        : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                    Previous
+                </button>
+                <span className="px-3 py-1">
+                    Page {currentPage} of {totalPages}
+                </span>
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded ${currentPage === totalPages 
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                        : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                >
+                    Next
+                </button>
+            </div>
+        </div>
+    );
 
     if (isLoading) {
         return (
@@ -269,7 +456,7 @@ const UserManagement = () => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {filteredUsers.map((user) => (
+                                {currentUsers.map((user) => (
                                     <tr key={user.id}>
                                         <td className="sticky left-0 bg-white px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-medium text-gray-900">
@@ -341,17 +528,22 @@ const UserManagement = () => {
                         </table>
                     </div>
                 </div>
+
+                {/* Pagination */}
+                <Pagination />
             </div>
 
             {/* Add User Modal */}
             {showAddModal && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-                    <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div className="relative top-20 mx-auto p-5 border w-3/4 max-w-8xl shadow-lg rounded-md bg-white">
                         <div className="mt-3">
                             <h3 className="text-lg font-medium text-gray-900">Add New User</h3>
                             <form onSubmit={handleAddUser} className="mt-4 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Username</label>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Username <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         type="text"
                                         name="username"
@@ -362,18 +554,96 @@ const UserManagement = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                                    <input
-                                        type="text"
-                                        name="fullname"
-                                        value={formData.fullname}
-                                        onChange={handleInputChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        required
-                                    />
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Full Name <span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <input
+                                            type="text"
+                                            name="surname"
+                                            placeholder="Surname"
+                                            value={formData.surname}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
+                                                const updatedFullname = `${e.target.value} ${formData.firstName || ''} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            required
+                                        />
+                                        <input
+                                            type="text"
+                                            name="firstName"
+                                            placeholder="First Name"
+                                            value={formData.firstName}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
+                                                const updatedFullname = `${formData.surname || ''} ${e.target.value} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 mt-4">
+                                        <input
+                                            type="text"
+                                            name="secondName"
+                                            placeholder="Second Name (Optional)"
+                                            value={formData.secondName}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${e.target.value} ${formData.middleName || ''}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                        <input
+                                            type="text"
+                                            name="middleName"
+                                            placeholder="Middle Name (Optional)"
+                                            value={formData.middleName}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.secondName || ''} ${e.target.value}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="suffix" className="block text-sm font-medium text-gray-700">
+                                            Suffix (Optional)
+                                        </label>
+                                        <select
+                                            id="suffix"
+                                            name="suffix"
+                                            value={formData.suffix}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = e.target.value ? `, ${e.target.value}` : '';
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        >
+                                            <option value="">None</option>
+                                            <option value="Jr.">Jr.</option>
+                                            <option value="Sr.">Sr.</option>
+                                            <option value="II">II</option>
+                                            <option value="III">III</option>
+                                            <option value="IV">IV</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Contact Number <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         type="text"
                                         name="contactNo"
@@ -384,7 +654,9 @@ const UserManagement = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Gender</label>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Gender <span className="text-red-500">*</span>
+                                    </label>
                                     <select
                                         name="gender"
                                         value={formData.gender}
@@ -400,7 +672,9 @@ const UserManagement = () => {
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Birth Day</label>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Birth Day <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="number"
                                             name="birthDay"
@@ -413,7 +687,9 @@ const UserManagement = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Birth Month</label>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Birth Month <span className="text-red-500">*</span>
+                                        </label>
                                         <select
                                             name="birthMonth"
                                             value={formData.birthMonth}
@@ -437,7 +713,9 @@ const UserManagement = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Birth Year</label>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Birth Year <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="number"
                                             name="birthYear"
@@ -451,13 +729,98 @@ const UserManagement = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Address</label>
-                                    <textarea
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleInputChange}
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Street Address <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="streetAddress"
+                                        value={formData.streetAddress}
+                                        onChange={(e) => {
+                                            handleInputChange(e);
+                                            // Combine address fields into address
+                                            const updatedAddress = `${e.target.value}, ${formData.city || ''}, ${formData.province || ''}, ${formData.zipCode || ''}`.trim();
+                                            setFormData(prev => ({ ...prev, address: updatedAddress }));
+                                        }}
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        rows="3"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Region <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        name="region"
+                                        value={selectedRegion}
+                                        onChange={(e) => setSelectedRegion(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                    >
+                                        <option value="">Select Region</option>
+                                        {regions.map(region => (
+                                            <option key={region} value={region}>{region}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Province <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        name="province"
+                                        value={formData.province}
+                                        onChange={(e) => {
+                                            handleInputChange(e);
+                                            setSelectedProvince(e.target.value);
+                                            const updatedAddress = `${formData.streetAddress || ''}, ${formData.city || ''}, ${e.target.value}, ${formData.zipCode || ''}`.trim();
+                                            setFormData(prev => ({ ...prev, address: updatedAddress }));
+                                        }}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                    >
+                                        <option value="">Select Province</option>
+                                        {availableProvinces.map(province => (
+                                            <option key={province} value={province}>{province}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        City <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={(e) => {
+                                            handleInputChange(e);
+                                            const updatedAddress = `${formData.streetAddress || ''}, ${e.target.value}, ${formData.province || ''}, ${formData.zipCode || ''}`.trim();
+                                            setFormData(prev => ({ ...prev, address: updatedAddress }));
+                                        }}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                    >
+                                        <option value="">Select City</option>
+                                        {availableCities.map(city => (
+                                            <option key={city} value={city}>{city}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Zip Code <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="zipCode"
+                                        value={formData.zipCode}
+                                        onChange={(e) => {
+                                            handleInputChange(e);
+                                            // Combine address fields into address
+                                            const updatedAddress = `${formData.streetAddress || ''}, ${formData.city || ''}, ${formData.province || ''}, ${e.target.value}`.trim();
+                                            setFormData(prev => ({ ...prev, address: updatedAddress }));
+                                        }}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                         required
                                     />
                                 </div>
@@ -477,7 +840,7 @@ const UserManagement = () => {
                                 <div className="flex justify-end space-x-3">
                                     <button
                                         type="button"
-                                        onClick={() => setShowAddModal(false)}
+                                        onClick={handleCloseAddModal}
                                         className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                                     >
                                         Cancel
@@ -498,12 +861,14 @@ const UserManagement = () => {
             {/* Edit User Modal */}
             {showEditModal && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-                    <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div className="relative top-20 mx-auto p-5 border w-3/4 max-w-8xl shadow-lg rounded-md bg-white">
                         <div className="mt-3">
                             <h3 className="text-lg font-medium text-gray-900">Edit User</h3>
                             <form onSubmit={handleUpdateUser} className="mt-4 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Username</label>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Username <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         type="text"
                                         name="username"
@@ -525,18 +890,96 @@ const UserManagement = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                                    <input
-                                        type="text"
-                                        name="fullname"
-                                        value={formData.fullname}
-                                        onChange={handleInputChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        required
-                                    />
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Full Name <span className="text-red-500">*</span>
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <input
+                                            type="text"
+                                            name="surname"
+                                            placeholder="Surname"
+                                            value={formData.surname}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
+                                                const updatedFullname = `${e.target.value} ${formData.firstName || ''} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            required
+                                        />
+                                        <input
+                                            type="text"
+                                            name="firstName"
+                                            placeholder="First Name"
+                                            value={formData.firstName}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
+                                                const updatedFullname = `${formData.surname || ''} ${e.target.value} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 mt-4">
+                                        <input
+                                            type="text"
+                                            name="secondName"
+                                            placeholder="Second Name (Optional)"
+                                            value={formData.secondName}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${e.target.value} ${formData.middleName || ''}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                        <input
+                                            type="text"
+                                            name="middleName"
+                                            placeholder="Middle Name (Optional)"
+                                            value={formData.middleName}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.secondName || ''} ${e.target.value}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="suffix-edit" className="block text-sm font-medium text-gray-700">
+                                            Suffix (Optional)
+                                        </label>
+                                        <select
+                                            id="suffix-edit"
+                                            name="suffix"
+                                            value={formData.suffix}
+                                            onChange={(e) => {
+                                                handleInputChange(e);
+                                                const suffixText = e.target.value ? `, ${e.target.value}` : '';
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
+                                            }}
+                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        >
+                                            <option value="">None</option>
+                                            <option value="Jr.">Jr.</option>
+                                            <option value="Sr.">Sr.</option>
+                                            <option value="II">II</option>
+                                            <option value="III">III</option>
+                                            <option value="IV">IV</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Contact Number <span className="text-red-500">*</span>
+                                    </label>
                                     <input
                                         type="text"
                                         name="contactNo"
@@ -547,7 +990,9 @@ const UserManagement = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Gender</label>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Gender <span className="text-red-500">*</span>
+                                    </label>
                                     <select
                                         name="gender"
                                         value={formData.gender}
@@ -563,7 +1008,9 @@ const UserManagement = () => {
                                 </div>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Birth Day</label>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Birth Day <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="number"
                                             name="birthDay"
@@ -576,7 +1023,9 @@ const UserManagement = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Birth Month</label>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Birth Month <span className="text-red-500">*</span>
+                                        </label>
                                         <select
                                             name="birthMonth"
                                             value={formData.birthMonth}
@@ -600,7 +1049,9 @@ const UserManagement = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Birth Year</label>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Birth Year <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="number"
                                             name="birthYear"
@@ -614,13 +1065,96 @@ const UserManagement = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Address</label>
-                                    <textarea
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleInputChange}
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Street Address <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="streetAddress"
+                                        value={formData.streetAddress}
+                                        onChange={(e) => {
+                                            handleInputChange(e);
+                                            const updatedAddress = `${e.target.value}, ${formData.city || ''}, ${formData.province || ''}, ${formData.zipCode || ''}`.trim();
+                                            setFormData(prev => ({ ...prev, address: updatedAddress }));
+                                        }}
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        rows="3"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Region <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        name="region"
+                                        value={selectedRegion}
+                                        onChange={(e) => setSelectedRegion(e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                    >
+                                        <option value="">Select Region</option>
+                                        {regions.map(region => (
+                                            <option key={region} value={region}>{region}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Province <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        name="province"
+                                        value={formData.province}
+                                        onChange={(e) => {
+                                            handleInputChange(e);
+                                            setSelectedProvince(e.target.value);
+                                            const updatedAddress = `${formData.streetAddress || ''}, ${formData.city || ''}, ${e.target.value}, ${formData.zipCode || ''}`.trim();
+                                            setFormData(prev => ({ ...prev, address: updatedAddress }));
+                                        }}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                    >
+                                        <option value="">Select Province</option>
+                                        {availableProvinces.map(province => (
+                                            <option key={province} value={province}>{province}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        City <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={(e) => {
+                                            handleInputChange(e);
+                                            const updatedAddress = `${formData.streetAddress || ''}, ${e.target.value}, ${formData.province || ''}, ${formData.zipCode || ''}`.trim();
+                                            setFormData(prev => ({ ...prev, address: updatedAddress }));
+                                        }}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        required
+                                    >
+                                        <option value="">Select City</option>
+                                        {availableCities.map(city => (
+                                            <option key={city} value={city}>{city}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        Zip Code <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="zipCode"
+                                        value={formData.zipCode}
+                                        onChange={(e) => {
+                                            handleInputChange(e);
+                                            const updatedAddress = `${formData.streetAddress || ''}, ${formData.city || ''}, ${formData.province || ''}, ${e.target.value}`.trim();
+                                            setFormData(prev => ({ ...prev, address: updatedAddress }));
+                                        }}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                         required
                                     />
                                 </div>
@@ -640,7 +1174,7 @@ const UserManagement = () => {
                                 <div className="flex justify-end space-x-3">
                                     <button
                                         type="button"
-                                        onClick={() => setShowEditModal(false)}
+                                        onClick={handleCloseEditModal}
                                         className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                                     >
                                         Cancel
@@ -661,4 +1195,4 @@ const UserManagement = () => {
     );
 };
 
-export default UserManagement; 
+export default UserManagement;

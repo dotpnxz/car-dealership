@@ -24,14 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Start session
 session_start();
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    ob_clean();
-    http_response_code(401);
-    echo json_encode(['error' => 'Please login to view the collection']);
-    exit();
-}
-
+// Remove the login check and continue directly to the database query
 try {
     require 'db_connect.php';
     $conn = db_connect();
@@ -63,4 +56,4 @@ try {
     echo json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
     exit();
 }
-?> 
+?>

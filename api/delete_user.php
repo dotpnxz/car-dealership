@@ -1,7 +1,8 @@
 <?php
-// Enable error reporting
+// Enable error logging
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/error.log');
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
 // Set CORS headers
 header('Access-Control-Allow-Origin: http://localhost:5173');
@@ -10,7 +11,6 @@ header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 header('Content-Type: application/json');
 
-// Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -18,49 +18,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 session_start();
 
-// Check if user is logged in and is an admin
+// Get database connection
+require_once __DIR__ . '/db_connect.php';
+$conn = db_connect();
+
+// Check authentication
 if (!isset($_SESSION['user_id']) || $_SESSION['accountType'] !== 'admin') {
     http_response_code(403);
     echo json_encode(['error' => 'Unauthorized access']);
     exit();
 }
 
-require 'db_connect.php';
-
 try {
-    // Get POST data
-    $data = json_decode(file_get_contents('php://input'), true);
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
 
     if (!isset($data['id'])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Missing user ID']);
-        exit();
+        throw new Exception('Missing user ID');
     }
 
-    // Prevent deleting the last admin
-    $stmt = $conn->prepare("SELECT COUNT(*) as adminCount FROM users WHERE accountType = 'admin'");
-    $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $conn->beginTransaction();
 
-    if ($result['adminCount'] <= 1) {
-        $stmt = $conn->prepare("SELECT accountType FROM users WHERE id = ?");
-        $stmt->execute([$data['id']]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Delete related bookings first
+    $stmt = $conn->prepare("DELETE FROM bookings WHERE user_id = ?");
+    $stmt->execute([$data['id']]);
 
-        if ($user['accountType'] === 'admin') {
-            http_response_code(400);
-            echo json_encode(['error' => 'Cannot delete the last admin user']);
-            exit();
-        }
-    }
-
-    // Delete user
+    // Then delete the user
     $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
     $stmt->execute([$data['id']]);
 
+    $conn->commit();
     echo json_encode(['message' => 'User deleted successfully']);
+
 } catch (PDOException $e) {
+    if (isset($conn)) {
+        $conn->rollBack();
+    }
+    error_log("PDO Error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Database connection error: ' . $e->getMessage()]);
+    exit();
+} catch (Exception $e) {
+    if (isset($conn)) {
+        $conn->rollBack();
+    }
+    error_log("Error: " . $e->getMessage());
+    http_response_code(400);
+    echo json_encode(['error' => $e->getMessage()]);
+    exit();
 }
-?> 
+?>

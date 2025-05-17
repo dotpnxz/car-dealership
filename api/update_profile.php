@@ -1,19 +1,14 @@
 <?php
 // Enable error reporting for debugging
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/error.log');
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
 
-// Start output buffering
-ob_start();
-
-// Start session
-session_start();
-
-// Enable CORS headers
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Credentials: true");
+// Set CORS headers
+header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -21,100 +16,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require 'db_connect.php';
+// Start session
+session_start();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        // Check if user is logged in
-        if (!isset($_SESSION['user_id'])) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'User not logged in'], JSON_UNESCAPED_UNICODE);
-            exit();
-        }
-
-        $userId = $_SESSION['user_id'];
-        $json_data = file_get_contents('php://input');
-        $data = json_decode($json_data, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Invalid JSON data'], JSON_UNESCAPED_UNICODE);
-            exit();
-        }
-
-        // Sanitize input data
-        $fullname = filter_var($data['fullname'] ?? '', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-        $username = filter_var($data['username'] ?? '', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-        $birthDay = filter_var($data['birthDay'] ?? null, FILTER_SANITIZE_NUMBER_INT);
-        $birthMonth = filter_var($data['birthMonth'] ?? null, FILTER_SANITIZE_NUMBER_INT);
-        $birthYear = filter_var($data['birthYear'] ?? null, FILTER_SANITIZE_NUMBER_INT);
-        $contactNo = filter_var($data['contactNo'] ?? '', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-        $gender = filter_var($data['gender'] ?? '', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-        $address = filter_var($data['address'] ?? '', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
-        // Check if username is already taken by another user
-        $stmt = $conn->prepare("SELECT id FROM users WHERE username = :username AND id != :userId");
-        $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-        $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
-        $stmt->execute();
-
-        if ($stmt->rowCount() > 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Username already taken'], JSON_UNESCAPED_UNICODE);
-            exit();
-        }
-
-        // Update user profile
-        $stmt = $conn->prepare("UPDATE users SET 
-            fullname = :fullname, 
-            username = :username, 
-            birthDay = :birthDay, 
-            birthMonth = :birthMonth, 
-            birthYear = :birthYear, 
-            contactNo = :contactNo, 
-            gender = :gender, 
-            address = :address 
-            WHERE id = :userId");
-
-        $stmt->bindParam(':fullname', $fullname, PDO::PARAM_STR);
-        $stmt->bindParam(':username', $username, PDO::PARAM_STR);
-        $stmt->bindParam(':birthDay', $birthDay, PDO::PARAM_INT);
-        $stmt->bindParam(':birthMonth', $birthMonth, PDO::PARAM_INT);
-        $stmt->bindParam(':birthYear', $birthYear, PDO::PARAM_INT);
-        $stmt->bindParam(':contactNo', $contactNo, PDO::PARAM_STR);
-        $stmt->bindParam(':gender', $gender, PDO::PARAM_STR);
-        $stmt->bindParam(':address', $address, PDO::PARAM_STR);
-        $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
-
-        if ($stmt->execute()) {
-            // Clear any previous output
-            ob_clean();
-            echo json_encode(['success' => true, 'message' => 'Profile updated successfully'], JSON_UNESCAPED_UNICODE);
-            exit();
-        } else {
-            http_response_code(500);
-            // Clear any previous output
-            ob_clean();
-            echo json_encode(['success' => false, 'message' => 'Failed to update profile'], JSON_UNESCAPED_UNICODE);
-            exit();
-        }
-    } catch (PDOException $e) {
-        http_response_code(500);
-        // Clear any previous output
-        ob_clean();
-        echo json_encode(['success' => false, 'message' => 'An error occurred while updating profile'], JSON_UNESCAPED_UNICODE);
-        exit();
-    }
-} else {
-    http_response_code(405);
-    // Clear any previous output
-    ob_clean();
-    echo json_encode(['success' => false, 'message' => 'Method not allowed'], JSON_UNESCAPED_UNICODE);
+// Check authentication
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(403);
+    echo json_encode(['error' => 'Unauthorized access']);
     exit();
 }
 
-// End output buffering and send output
-ob_end_flush();
+require_once __DIR__ . '/db_connect.php';
+$conn = db_connect();
 
-$conn->close();
-?> 
+try {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Invalid JSON data');
+    }
+
+    $conn->beginTransaction();
+
+    // Handle password change first if provided
+    if (!empty($data['oldPassword']) && !empty($data['newPassword'])) {
+        $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user || !password_verify($data['oldPassword'], $user['password'])) {
+            throw new Exception('Current password is incorrect');
+        }
+
+        $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+        $stmt->execute([
+            password_hash($data['newPassword'], PASSWORD_DEFAULT),
+            $_SESSION['user_id']
+        ]);
+    }
+
+    $sql = "UPDATE users SET 
+            surname = ?,
+            firstName = ?,
+            secondName = ?,
+            middleName = ?,
+            suffix = ?,
+            contactNo = ?,
+            gender = ?,
+            birthDay = ?,
+            birthMonth = ?,
+            birthYear = ?,
+            streetAddress = ?,
+            city = ?,
+            province = ?,
+            zipCode = ?
+            WHERE id = ?";
+
+    $params = [
+        $data['surname'],
+        $data['firstName'],
+        $data['secondName'],
+        $data['middleName'],
+        $data['suffix'],
+        $data['contactNo'],
+        $data['gender'],
+        $data['birthDay'],
+        $data['birthMonth'],
+        $data['birthYear'],
+        $data['streetAddress'],
+        $data['city'],
+        $data['province'],
+        $data['zipCode'],
+        $_SESSION['user_id']
+    ];
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
+
+    if ($stmt->rowCount() === 0 && empty($data['oldPassword'])) {
+        throw new Exception('No changes made');
+    }
+
+    $conn->commit();
+    echo json_encode(['success' => true, 'message' => 'Profile updated successfully']);
+
+} catch (Exception $e) {
+    if (isset($conn)) {
+        $conn->rollBack();
+    }
+    error_log("Profile update error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+}
+?>

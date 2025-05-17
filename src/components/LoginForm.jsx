@@ -74,64 +74,72 @@ const LoginForm = () => {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100">
-            <div className="bg-white p-8 rounded-md shadow-md w-full max-w-sm">
-                <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">Login Form</h2>
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-6 sm:py-12">
+            <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 sm:p-8">
+                <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">Login</h2>
+
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-                        {error}
+                    <div className="mb-4 sm:mb-6 p-3 rounded border-l-4 bg-red-100 border-red-500 text-red-700 text-sm sm:text-base">
+                        <p>{error}</p>
                     </div>
                 )}
-                <form onSubmit={handleSubmit}>
+
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="username" className="block text-gray-700 text-base sm:text-lg font-bold mb-2">
+                                Username
+                            </label>
+                            <input
+                                type="text"
+                                id="username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                className="shadow appearance-none border rounded w-full py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="password" className="block text-gray-700 text-base sm:text-lg font-bold mb-2">
+                                Password
+                            </label>
+                            <input
+                                type="password"
+                                id="password"
+                                value={password}
+                                onChange={handlePasswordChange}
+                                className="shadow appearance-none border rounded w-full py-2 sm:py-3 px-3 sm:px-4 text-base sm:text-lg text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                required
+                            />
+                        </div>
+                    </div>
+
                     <div className="mb-4">
-                        <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">
-                            Username:
-                        </label>
-                        <input
-                            type="text"
-                            id="username"
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            value={username}
-                            onChange={handleUsernameChange}
-                            required
-                            disabled={isLoading}
-                        />
+                        <div className="flex justify-between items-center">
+                            <Link 
+                                to="/reset-password" 
+                                className="text-sm text-blue-500 hover:text-blue-700"
+                            >
+                                Forgot Password?
+                            </Link>
+                            <Link 
+                                to="/register" 
+                                className="text-sm text-blue-500 hover:text-blue-700"
+                            >
+                                Create Account
+                            </Link>
+                        </div>
                     </div>
-                    <div className="mb-4">
-                        <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
-                            Password:
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            value={password}
-                            onChange={handlePasswordChange}
-                            required
-                            disabled={isLoading}
-                        />
-                    </div>
-                    <div className="mb-4 text-right">
-                        <Link to="/forgot-password" className="text-red-500 text-sm hover:underline focus:outline-none">
-                            Forgot password?
-                        </Link>
-                    </div>
-                    <div className="flex items-center justify-between">
+
+                    <div className="flex justify-end">
                         <button
                             type="submit"
-                            className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
-                                isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
                             disabled={isLoading}
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2.5 sm:py-3 px-6 sm:px-8 text-base sm:text-lg rounded focus:outline-none focus:shadow-outline w-full transition-colors"
                         >
-                            {isLoading ? 'Signing in...' : 'Sign In'}
+                            {isLoading ? 'Logging in...' : 'Login'}
                         </button>
-                        <Link
-                            to="/RegistrationForm"
-                            className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
-                        >
-                            Register
-                        </Link>
                     </div>
                 </form>
             </div>

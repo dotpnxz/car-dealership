@@ -38,10 +38,24 @@ try {
     
     // Prepare SQL statement to get staff members
     $stmt = $conn->prepare("
-        SELECT id, fullname, contactNo
+        SELECT id, 
+            CONCAT(
+                surname,
+                ' ',
+                firstname,
+                CASE 
+                    WHEN middlename IS NOT NULL AND middlename != '' THEN CONCAT(' ', middlename)
+                    ELSE ''
+                END,
+                CASE 
+                    WHEN suffix IS NOT NULL AND suffix != '' THEN CONCAT(' ', suffix)
+                    ELSE ''
+                END
+            ) AS fullname,
+            contactNo
         FROM users
         WHERE accountType = 'staff'
-        ORDER BY fullname ASC
+        ORDER BY surname ASC, firstname ASC
     ");
 
     $stmt->execute();
@@ -67,4 +81,4 @@ try {
     echo json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
     exit();
 }
-?> 
+?>

@@ -13,29 +13,27 @@ require 'db_connect.php';
 
 try {
     session_start();
-    
+
     // Debug session information
     error_log("Full session data: " . print_r($_SESSION, true));
     error_log("Session user_id: " . (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'not set'));
-    error_log("Session account_type: " . (isset($_SESSION['account_type']) ? $_SESSION['account_type'] : 'not set'));
-    
+    error_log("Session accountType: " . (isset($_SESSION['accountType']) ? $_SESSION['accountType'] : 'not set')); // Use the correct variable name
+
     if (!isset($_SESSION['user_id'])) {
         error_log("User not logged in - redirecting to login");
         throw new Exception('User not logged in');
     }
 
     $userId = $_SESSION['user_id'];
-    $accountType = $_SESSION['account_type'];
+    $accountType = $_SESSION['accountType'] ?? ''; // Use the correct variable name and handle potential unset
+
+    // Debug account type
+    error_log("Account type from session: " . $accountType);
+
     $conn = db_connect();
-    
-    // Debug account type and force admin for testing
-    error_log("Raw account type from session: " . $accountType);
-    error_log("Account type comparison: " . ($accountType === 'admin' ? 'matches' : 'does not match'));
-    
-    // Force admin query for testing
-    error_log("Forcing admin query regardless of account type");
-    $stmt = $conn->prepare("
-        SELECT 
+
+    $sql = "
+        SELECT
             rc.id,
             rc.fullname,
             rc.title,
@@ -45,12 +43,26 @@ try {
             rc.user_id
         FROM reserved_cars rc
         LEFT JOIN users u ON rc.user_id = u.id
-        ORDER BY rc.reservation_date DESC
-    ");
+        WHERE ";
+
+    if ($accountType === 'admin') {
+        $sql .= "1=1"; // Admin sees all
+    } else {
+        $sql .= "rc.user_id = :user_id"; // Regular users see their own
+    }
+
+    $sql .= " ORDER BY rc.reservation_date DESC";
+
+    $stmt = $conn->prepare($sql);
+
+    // Bind parameter only if not admin
+    if ($accountType !== 'admin') {
+        $stmt->bindParam(':user_id', $userId);
+    }
+
     $stmt->execute();
-    
     $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     // Debug information
     error_log("Number of reservations found: " . count($reservations));
     error_log("Reservations data: " . print_r($reservations, true));
@@ -77,4 +89,4 @@ try {
         'error' => $e->getMessage()
     ]);
 }
-?> 
+?>

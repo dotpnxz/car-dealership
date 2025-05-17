@@ -29,8 +29,34 @@ try {
     require 'db_connect.php';
     $conn = db_connect();
     
-    // Prepare SQL statement
-    $sql = "SELECT id, username, fullname, contactNo, gender, birthDay, birthMonth, birthYear, address, accountType FROM users";
+    // Update SQL statement to use combined fields
+    $sql = "SELECT 
+        id, 
+        username, 
+        CONCAT(surname, ' ', firstName,
+            CASE WHEN suffix IS NOT NULL AND suffix != '' THEN CONCAT(' ', suffix) ELSE '' END,
+            CASE WHEN secondName IS NOT NULL AND secondName != '' THEN CONCAT(' ', secondName) ELSE '' END,
+            CASE WHEN middleName IS NOT NULL AND middleName != '' THEN CONCAT(' ', middleName) ELSE '' END
+        ) as fullname,
+        contactNo,
+        gender,
+        birthDay,
+        birthMonth,
+        birthYear,
+        streetAddress,
+        city,
+        province,
+        zipCode,
+        suffix,
+        CONCAT(
+            streetAddress, ', ', 
+            city, ', ', 
+            province, ', ',
+            zipCode
+        ) as address,
+        accountType 
+    FROM users";
+    
     $stmt = $conn->prepare($sql);
     $stmt->execute();
     
@@ -49,4 +75,4 @@ try {
     echo json_encode(['error' => 'Database error: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
     exit();
 }
-?> 
+?>

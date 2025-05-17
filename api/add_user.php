@@ -1,14 +1,13 @@
 <?php
-// Enable error reporting
+// Set error handling
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Set CORS headers
-header('Access-Control-Allow-Origin: http://localhost:5173');
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Credentials: true');
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -16,65 +15,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-session_start();
-
-// Check if user is logged in and is an admin
-if (!isset($_SESSION['user_id']) || $_SESSION['accountType'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['error' => 'Unauthorized access']);
-    exit();
-}
-
-require 'db_connect.php';
-
 try {
+    require_once 'db_connect.php';
+    $conn = db_connect();
+
     // Get POST data
-    $data = json_decode(file_get_contents('php://input'), true);
+    $input = file_get_contents('php://input');
+    error_log("Received input: " . $input);
 
-    // Validate required fields
-    $requiredFields = ['username', 'fullname', 'contactNo', 'gender', 'birthDay', 'birthMonth', 'birthYear', 'address', 'accountType'];
-    foreach ($requiredFields as $field) {
-        if (!isset($data[$field]) || empty($data[$field])) {
-            http_response_code(400);
-            echo json_encode(['error' => "Missing required field: $field"]);
-            exit();
-        }
+    $data = json_decode($input, true);
+    if (!$data) {
+        throw new Exception('Invalid JSON input: ' . json_last_error_msg());
     }
 
-    // Check if username already exists
-    $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
-    $stmt->execute([$data['username']]);
-    if ($stmt->rowCount() > 0) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Username already exists']);
-        exit();
-    }
-
-    // Generate a random password
-    $password = bin2hex(random_bytes(4)); // 8 characters
+    // Insert user logic here
+    $password = bin2hex(random_bytes(4));
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Insert new user
-    $stmt = $conn->prepare("INSERT INTO users (username, password, fullname, contactNo, gender, birthDay, birthMonth, birthYear, address, accountType) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("
+        INSERT INTO users (
+            username, password, 
+            surname, firstName, secondName, middleName, suffix,
+            contactNo, gender, 
+            birthDay, birthMonth, birthYear,
+            streetAddress, city, province, zipCode,
+            accountType
+        ) VALUES (
+            ?, ?, 
+            ?, ?, ?, ?, ?,
+            ?, ?, 
+            ?, ?, ?,
+            ?, ?, ?, ?,
+            ?
+        )
+    ");
+    
     $stmt->execute([
         $data['username'],
         $hashedPassword,
-        $data['fullname'],
+        $data['surname'],
+        $data['firstName'],
+        $data['secondName'],
+        $data['middleName'],
+        $data['suffix'],
         $data['contactNo'],
         $data['gender'],
         $data['birthDay'],
         $data['birthMonth'],
         $data['birthYear'],
-        $data['address'],
+        $data['streetAddress'],
+        $data['city'],
+        $data['province'],
+        $data['zipCode'],
         $data['accountType']
     ]);
 
     echo json_encode([
+        'success' => true,
         'message' => 'User added successfully',
-        'password' => $password // Send the generated password back to the admin
+        'password' => $password
     ]);
-} catch (PDOException $e) {
+
+} catch (Exception $e) {
+    error_log("Error in add_user.php: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }
-?> 
+?>

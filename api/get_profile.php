@@ -27,7 +27,14 @@ if (isset($_SESSION['user_id'])) {
         $conn = db_connect();
         
         // Prepare SQL statement
-        $sql = "SELECT fullname, username, birthDay, birthMonth, birthYear, contactNo, gender, address FROM users WHERE id = :user_id";
+        $sql = "SELECT 
+                    id,
+                    surname, firstName, secondName, middleName, suffix,
+                    username, email, contactNo, gender,
+                    birthDay, birthMonth, birthYear,
+                    streetAddress, province, city, zipCode
+                FROM users 
+                WHERE id = :user_id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':user_id', $loggedInUserId);
         $stmt->execute();

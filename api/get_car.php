@@ -27,8 +27,14 @@ try {
     $carId = $_GET['id'];
     $conn = db_connect();
     
-    // Get specific car details including title
-    $stmt = $conn->prepare("SELECT title, price, category, brand, variant, mileage FROM cars WHERE id = ?");
+    // Get specific car details including all fields
+    $stmt = $conn->prepare("
+        SELECT title, price, category, brand, variant, mileage, 
+               chassis, transmission, fuel_type, `condition`, 
+               seating, issues 
+        FROM cars 
+        WHERE id = ?
+    ");
     $stmt->execute([$carId]);
     $car = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -56,4 +62,4 @@ try {
 }
 
 // End output buffering
-ob_end_flush(); 
+ob_end_flush();

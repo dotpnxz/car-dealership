@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../components/AuthContext';
 
@@ -6,6 +6,28 @@ const StaffLayout = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { logout } = useContext(AuthContext);
+    const [notificationCount, setNotificationCount] = useState(0);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                const response = await fetch('http://localhost/car-dealership/api/get_notifications.php', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    setNotificationCount(data.count);
+                }
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
+        };
+
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
     const isActive = (path) => {
         return location.pathname.startsWith(path) ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white';
@@ -16,10 +38,34 @@ const StaffLayout = () => {
         navigate('/');
     };
 
+    const handleAnnouncementClick = async () => {
+        try {
+            await fetch('http://localhost/car-dealership/api/mark_notifications_read.php', {
+                credentials: 'include'
+            });
+            setNotificationCount(0);
+        } catch (error) {
+            console.error('Error marking notifications as read:', error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-100">
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden fixed top-0 left-0 m-4 z-50">
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="p-2 rounded-md bg-gray-800 text-white hover:bg-gray-700"
+                >
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                            d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                    </svg>
+                </button>
+            </div>
+
             {/* Sidebar */}
-            <div className="fixed inset-y-0 left-0 w-64 bg-gray-800 flex flex-col">
+            <div className={`fixed inset-y-0 left-0 w-64 bg-gray-800 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-300 ease-in-out z-40`}>
                 <div className="flex items-center justify-center h-16 bg-gray-900">
                     <span className="text-white text-xl font-semibold">Staff Panel</span>
                 </div>
@@ -34,22 +80,21 @@ const StaffLayout = () => {
                         Dashboard
                     </Link>
                     <Link
-                        to="/staff/cars"
-                        className={`mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md ${isActive('/staff/cars')}`}
+                        to="/staff/announcements"
+                        onClick={handleAnnouncementClick}
+                        className={`group flex items-center px-2 py-2 text-base font-medium rounded-md ${isActive('/staff/announcements')}`}
                     >
-                        <svg className="mr-4 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                        </svg>
-                        Car Management
-                    </Link>
-                    <Link
-                        to="/staff/bookings"
-                        className={`mt-1 group flex items-center px-2 py-2 text-base font-medium rounded-md ${isActive('/staff/bookings')}`}
-                    >
-                        <svg className="mr-4 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        Booking Management
+                        <div className="relative">
+                            <svg className="mr-4 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            </svg>
+                            {notificationCount > 0 && (
+                                <span className="absolute -top-2 -right-1 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center text-xs">
+                                    {notificationCount}
+                                </span>
+                            )}
+                        </div>
+                        Announcements
                     </Link>
                 </nav>
                 {/* Logout Button */}
@@ -67,20 +112,16 @@ const StaffLayout = () => {
             </div>
 
             {/* Main Content */}
-            <div className="pl-64">
+            <div className="lg:pl-0 w-full">
                 {/* Top Navigation */}
                 <div className="bg-white shadow">
-                    <div className="px-4 py-4 flex justify-between items-center">
-                        <h1 className="text-2xl font-semibold text-gray-800">
+                    <div className="px-4 py-3 flex justify-between items-center">
+                        <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
                             {location.pathname === '/staff' && 'Dashboard'}
-                            {location.pathname === '/staff/cars' && 'Car Management'}
-                            {location.pathname === '/staff/bookings' && 'Booking Management'}
+                            {location.pathname === '/staff/announcements' && 'Announcements'}
                         </h1>
-                        <div className="flex items-center">
-                            <Link
-                                to="/"
-                                className="text-gray-600 hover:text-gray-900"
-                            >
+                        <div className="flex items-center space-x-4">
+                            <Link to="/" className="text-sm sm:text-base text-gray-600 hover:text-gray-900">
                                 Back to Home
                             </Link>
                         </div>
@@ -88,12 +129,20 @@ const StaffLayout = () => {
                 </div>
 
                 {/* Page Content */}
-                <main className="p-6">
+                <main className="p-4 sm:p-6">
                     <Outlet />
                 </main>
             </div>
+
+            {/* Mobile Overlay */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-30"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
         </div>
     );
 };
 
-export default StaffLayout; 
+export default StaffLayout;

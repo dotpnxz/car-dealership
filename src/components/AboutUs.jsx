@@ -8,15 +8,15 @@ const AboutUs = () => {
   return (
     <div id="about" className="w-full">
       {/* Banner Section with Text Overlay */}
-      <div className="relative w-full h-[400px]">
+      <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px]">
         <img 
           src={abtusbg} 
           alt="Banner" 
           className="w-full h-full object-cover blur-[.25rem] contrast-55"
         />
         {/* Overlay Text */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-white text-[5rem] font-sans px-4 py-2 rounded-lg italic text-center">
+        <div className="absolute inset-0 flex items-center justify-center px-4">
+          <h1 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-[5rem] font-sans px-4 py-2 rounded-lg italic text-center">
             LEARN MORE ABOUT{" "}  
             <span className="font-bold not-italic">
               <span className="text-yellow-500">MJ</span>-
@@ -28,19 +28,18 @@ const AboutUs = () => {
       </div>
 
       {/* Mission Section */}
-      <div className="w-full bg-[#484444] flex flex-row justify-between items-center text-white py-[6rem] px-[8rem] gap-[3rem]">
-        
+      <div className="w-full bg-[#484444] flex flex-col lg:flex-row justify-between items-center text-white py-8 sm:py-12 lg:py-[6rem] px-4 sm:px-8 lg:px-[8rem] gap-8 lg:gap-[3rem]">
         {/* Left Section - Mission Title & Text */}
-        <div className="relative w-1/2 flex flex-col items-center">
-          <h1 className="text-[#e4100e] font-bold italic text-[5rem]">Mission</h1>
-          <div className="relative w-full">
+        <div className="relative w-full lg:w-1/2 flex flex-col items-center">
+          <h1 className="text-[#e4100e] font-bold italic text-4xl sm:text-5xl lg:text-[5rem] mb-4 lg:mb-8">Mission</h1>
+          <div className="relative w-full min-h-[300px] lg:min-h-[400px] flex items-center">
             <img
               src={shade}
               alt="text-bg"
-              className="w-full max-w-[40rem] h-auto object-contain blur-[.05rem] contrast-25"
+              className="absolute w-full max-w-[40rem] h-auto object-contain blur-[.05rem] contrast-25"
             />
             {/* Mission Statement */}
-            <ul className="absolute inset-0 flex flex-col justify-center text-lg max-w-lg px-8 space-y-2 pl-[6rem]">
+            <ul className="relative z-10 flex flex-col justify-center text-base sm:text-lg max-w-lg mx-auto px-6 lg:px-12 space-y-2">
               <li>• To provide customers with reliable, well-maintained vehicles at competitive prices.</li>
               <li>• To ensure a seamless and hassle-free car-buying experience through excellent customer service.</li>
               <li>• To maintain transparency and integrity in every transaction.</li>
@@ -51,40 +50,40 @@ const AboutUs = () => {
         </div>
 
         {/* Right Section - Mission Image */}
-        <div className="w-1/2 flex justify-end">
+        <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
           <img
             src={mission}
             alt="mission"
-            className="w-full max-w-[55rem] h-auto object-contain shadow-[15px_15px_30px_rgba(0,0,0,0.5)]"
+            className="w-full max-w-[40rem] lg:max-w-[55rem] h-auto object-contain shadow-[15px_15px_30px_rgba(0,0,0,0.5)]"
           />
         </div>
       </div>
 
       {/* Vision Section */}
-      <div className="w-full bg-[#484444] flex flex-row-reverse justify-between items-center text-white py-[6rem] px-[8rem] gap-[3rem]">
+      <div className="w-full bg-[#484444] flex flex-col lg:flex-row-reverse justify-between items-center text-white py-8 sm:py-12 lg:py-[6rem] px-4 sm:px-8 lg:px-[8rem] gap-8 lg:gap-[3rem]">
         
         {/* Right Section - Vision Title & Text */}
-        <div className="relative w-1/2 flex flex-col items-center">
-          <h1 className="text-[#e4100e] font-bold italic text-[5rem]">Vision</h1>
-          <div className="relative w-full">
+        <div className="relative w-full lg:w-1/2 flex flex-col items-center">
+          <h1 className="text-[#e4100e] font-bold italic text-4xl sm:text-5xl lg:text-[5rem] mb-4 lg:mb-8">Vision</h1>
+          <div className="relative w-full min-h-[300px] lg:min-h-[400px] flex items-center">
             <img
               src={shade}
               alt="text-bg"
-              className="w-full max-w-[40rem] h-auto object-contain blur-[.05rem] contrast-25"
+              className="absolute w-full max-w-[40rem] h-auto object-contain blur-[.05rem] contrast-25"
             />
             {/* Vision Statement */}
-            <p className="absolute inset-0 flex items-center text-[1.5rem] max-w-lg px-6 pl-[5rem]">
+            <p className="relative z-10 text-base sm:text-lg lg:text-[1.5rem] max-w-lg mx-auto px-6 lg:px-12">
               To be a trusted and customer-focused car dealership known for quality vehicles, transparency, and excellent service while embracing innovation to enhance the car-buying experience.
             </p>
           </div>
         </div>
 
         {/* Left Section - Vision Image */}
-        <div className="w-1/2 flex justify-end">
+        <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
           <img
             src={vision}
             alt="vision"
-            className="w-full max-w-[55rem] h-auto object-contain shadow-[15px_15px_30px_rgba(0,0,0,0.5)]"
+            className="w-full max-w-[40rem] lg:max-w-[55rem] h-auto object-contain shadow-[15px_15px_30px_rgba(0,0,0,0.5)]"
           />
         </div>
 

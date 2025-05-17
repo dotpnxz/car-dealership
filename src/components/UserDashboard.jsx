@@ -1,324 +1,163 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const UserDashboard = () => {
-    const { user, setUser } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('bookings');
-    const [bookings, setBookings] = useState([]);
-    const [cars, setCars] = useState([]);
-    const [reservations, setReservations] = useState([]);
+    const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [userName, setUserName] = useState('User');
+    const [stats, setStats] = useState({
+        total_bookings: 0,
+        total_reservations: 0,
+        pending_bookings: 0,
+        approved_reservations: 0,
+        today_bookings: 0
+    });
 
     useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch('http://localhost/car-dealership/api/get_user.php', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (data.success && data.user && data.user.fullName) {
+                    setUserName(data.user.fullName.trim() || 'User');
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchStats = async () => {
+            try {
+                const response = await fetch('http://localhost/car-dealership/api/dashboard_stats.php', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    setStats({
+                        total_bookings: data.data.totalBookings || 0,
+                        total_reservations: data.data.totalReservations || 0,
+                        pending_bookings: data.data.pendingBookings || 0,
+                        approved_reservations: data.data.approvedReservations || 0,
+                        today_bookings: data.data.todayBookings || 0
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        };
+
         fetchUserData();
-    }, [activeTab]);
+        fetchStats();
+    }, []);
 
-    const fetchUserData = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            if (activeTab === 'profile') {
-                const response = await fetch('http://localhost/car-dealership/api/get_profile.php', {
-                    credentials: 'include'
-                });
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || 'Failed to fetch profile');
-                }
-                const data = await response.json();
-                setUser(data);
-            } else if (activeTab === 'bookings') {
-                const response = await fetch('http://localhost/car-dealership/api/get_bookings.php', {
-                    credentials: 'include'
-                });
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || 'Failed to fetch bookings');
-                }
-                const data = await response.json();
-                setBookings(data);
-            } else if (activeTab === 'cars') {
-                const response = await fetch('http://localhost/car-dealership/api/get_user_cars.php', {
-                    credentials: 'include'
-                });
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || 'Failed to fetch cars');
-                }
-                const data = await response.json();
-                setCars(data);
-            } else if (activeTab === 'reservations') {
-                const response = await fetch('http://localhost/car-dealership/api/get_user_reservations.php', {
-                    credentials: 'include'
-                });
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.error || 'Failed to fetch reservations');
-                }
-                const data = await response.json();
-                setReservations(data);
-            }
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleCancelBooking = async (bookingId) => {
-        try {
-            const response = await fetch('http://localhost/car-dealership/api/update_booking_status.php', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    booking_id: bookingId,
-                    status: 'cancelled'
-                }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to cancel booking');
-            }
-
-            if (!data.success) {
-                throw new Error(data.message || 'Failed to cancel booking');
-            }
-
-            // Refresh the bookings list
-            fetchUserData();
-        } catch (error) {
-            setError(error.message);
-        }
-    };
-
-    const renderContent = () => {
-        if (loading) {
-            return (
-                <div className="flex justify-center items-center h-full">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                </div>
-            );
-        }
-
-        if (error) {
-            return (
-                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                    <div className="flex items-center">
-                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                        <span>{error}</span>
-                    </div>
-                </div>
-            );
-        }
-
-        switch (activeTab) {
-            case 'profile':
-                return (
-                    <div className="space-y-4">
-                        <h2 className="text-2xl font-bold">My Profile</h2>
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="font-semibold text-gray-700">Personal Information</h3>
-                                    <div className="mt-2 space-y-2">
-                                        <p><span className="font-medium">Full Name:</span> {user?.fullname || 'Not set'}</p>
-                                        <p><span className="font-medium">Username:</span> {user?.username || 'Not set'}</p>
-                                        <p><span className="font-medium">Contact Number:</span> {user?.contactNo || 'Not set'}</p>
-                                        <p><span className="font-medium">Gender:</span> {user?.gender || 'Not set'}</p>
-                                        <p><span className="font-medium">Date of Birth:</span> {
-                                            user?.birthDay && user?.birthMonth && user?.birthYear 
-                                                ? `${user.birthMonth}/${user.birthDay}/${user.birthYear}`
-                                                : 'Not set'
-                                        }</p>
-                                        <p><span className="font-medium">Address:</span> {user?.address || 'Not set'}</p>
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <button
-                                        onClick={() => navigate('/profile')}
-                                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-                                    >
-                                        Edit Profile
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            case 'bookings':
-                return (
-                    <div className="space-y-4">
-                        <h2 className="text-2xl font-bold">My Bookings</h2>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full bg-white">
-                                <thead>
-                                    <tr className="bg-gray-100">
-                                        <th className="py-3 px-4 border-b text-left">Car Model</th>
-                                        <th className="py-3 px-4 border-b text-center">Date</th>
-                                        <th className="py-3 px-4 border-b text-center">Time</th>
-                                        <th className="py-3 px-4 border-b text-center">Status</th>
-                                        <th className="py-3 px-4 border-b text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {bookings.map((booking) => (
-                                        <tr key={booking.id} className="hover:bg-gray-50">
-                                            <td className="py-3 px-4 border-b text-left">{booking.car_model}</td>
-                                            <td className="py-3 px-4 border-b text-center">{new Date(booking.booking_date).toLocaleDateString()}</td>
-                                            <td className="py-3 px-4 border-b text-center">
-                                                {booking.booking_time}
-                                            </td>
-                                            <td className="py-3 px-4 border-b text-center">
-                                                <span className={`px-3 py-1 rounded-full text-sm inline-block ${
-                                                    booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                    booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                                    booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                                                    'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                    {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                                                    {booking.status === 'cancelled' && booking.cancellation_reason && (
-                                                        <div className="mt-1 text-xs text-gray-600">
-                                                            Reason: {booking.cancellation_reason}
-                                                        </div>
-                                                    )}
-                                                </span>
-                                            </td>
-                                            <td className="py-3 px-4 border-b text-center">
-                                                {booking.status === 'pending' && (
-                                                    <button
-                                                        onClick={() => handleCancelBooking(booking.id)}
-                                                        className="text-red-600 hover:text-red-800 font-medium"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                );
-            case 'cars':
-                return (
-                    <div className="space-y-4">
-                        <h2 className="text-2xl font-bold">My Cars for Sale</h2>
-                        <div className="grid gap-4">
-                            {cars.map(car => (
-                                <div key={car.id} className="bg-white p-4 rounded-lg shadow">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-semibold">{car.make} {car.model}</h3>
-                                            <p className="text-gray-600">Year: {car.year}</p>
-                                            <p className="text-gray-600">Price: ${car.price}</p>
-                                            <p className="text-gray-600">Status: {car.status}</p>
-                                        </div>
-                                        <span className={`px-2 py-1 rounded text-sm ${
-                                            car.status === 'approved' ? 'bg-green-100 text-green-800' :
-                                            car.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
-                                        }`}>
-                                            {car.status}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            case 'reservations':
-                return (
-                    <div className="space-y-4">
-                        <h2 className="text-2xl font-bold">My Reservations</h2>
-                        <div className="grid gap-4">
-                            {reservations.map(reservation => (
-                                <div key={reservation.id} className="bg-white p-4 rounded-lg shadow">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-semibold">{reservation.car_model}</h3>
-                                            <p className="text-gray-600">Date: {reservation.reservation_date}</p>
-                                            <p className="text-gray-600">Status: {reservation.status}</p>
-                                        </div>
-                                        <span className={`px-2 py-1 rounded text-sm ${
-                                            reservation.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                            reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
-                                        }`}>
-                                            {reservation.status}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <div className="flex">
-                {/* Sidebar */}
-                <div className="w-64 bg-white shadow-md">
-                    <div className="p-4">
-                        <h2 className="text-xl font-bold mb-4">Dashboard</h2>
-                        <nav className="space-y-2">
-                            <button
-                                onClick={() => setActiveTab('profile')}
-                                className={`w-full text-left px-4 py-2 rounded-lg ${
-                                    activeTab === 'profile' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100'
-                                }`}
-                            >
-                                My Profile
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('bookings')}
-                                className={`w-full text-left px-4 py-2 rounded-lg ${
-                                    activeTab === 'bookings' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100'
-                                }`}
-                            >
-                                My Bookings
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('cars')}
-                                className={`w-full text-left px-4 py-2 rounded-lg ${
-                                    activeTab === 'cars' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100'
-                                }`}
-                            >
-                                My Cars
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('reservations')}
-                                className={`w-full text-left px-4 py-2 rounded-lg ${
-                                    activeTab === 'reservations' ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100'
-                                }`}
-                            >
-                                My Reservations
-                            </button>
-                        </nav>
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+                <div className="bg-white overflow-hidden shadow-xl rounded-lg p-4 mb-4">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                        Welcome back, {userName}!
+                    </h1>
+                    <p className="text-base sm:text-lg text-gray-600">
+                        We're glad to see you again. Stay updated with our latest announcements and manage your activities from here.
+                    </p>
+                </div>
+
+                {/* Stats Grid - Mobile optimized */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
+                    <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
+                        <div className="text-lg sm:text-xl font-bold text-blue-600">{stats.total_bookings}</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Total Bookings</div>
+                    </div>
+                    <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
+                        <div className="text-lg sm:text-xl font-bold text-green-600">{stats.total_reservations}</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Total Reservations</div>
+                    </div>
+                    <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
+                        <div className="text-lg sm:text-xl font-bold text-yellow-600">{stats.pending_bookings}</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Pending Bookings</div>
+                    </div>
+                    <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
+                        <div className="text-lg sm:text-xl font-bold text-purple-600">{stats.approved_reservations}</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Approved Reservations</div>
+                    </div>
+                    <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
+                        <div className="text-lg sm:text-xl font-bold text-indigo-600">{stats.today_bookings}</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Today's Bookings</div>
                     </div>
                 </div>
 
-                {/* Main Content */}
-                <div className="flex-1 p-8">
-                    {renderContent()}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                    <div className="bg-white overflow-hidden shadow-lg rounded-lg p-4 sm:p-6">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4">Quick Actions</h2>
+                        <ul className="space-y-2 sm:space-y-3">
+                            <li 
+                                className="flex items-center text-gray-600 cursor-pointer hover:text-blue-500 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100"
+                                onClick={() => navigate('/Collection')}
+                            >
+                                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <span className="text-sm sm:text-base">Browse Available Cars</span>
+                            </li>
+                            <li 
+                                className="flex items-center text-gray-600 cursor-pointer hover:text-blue-500 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100"
+                                onClick={() => navigate('/user/profile')}
+                            >
+                                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span className="text-sm sm:text-base">Update Profile</span>
+                            </li>
+                            <li 
+                                className="flex items-center text-gray-600 cursor-pointer hover:text-blue-500 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100"
+                                onClick={() => navigate('/user/mybookings')}
+                            >
+                                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span className="text-sm sm:text-base">View Bookings</span>
+                            </li>
+                            <li 
+                                className="flex items-center text-gray-600 cursor-pointer hover:text-blue-500 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100"
+                                onClick={() => navigate('/user/myreservations')}
+                            >
+                                <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <span className="text-sm sm:text-base">View Reservations</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div className="bg-white overflow-hidden shadow-lg rounded-lg p-4 sm:p-6">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3 sm:mb-4">Latest Updates</h2>
+                        <p className="text-sm sm:text-base text-gray-600 mb-4">
+                            Stay informed about our newest car listings and special offers.
+                        </p>
+                        <div className="flex">
+                            <button 
+                                onClick={() => navigate('/user/announcements')} 
+                                className="w-full sm:w-auto bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-colors text-sm sm:text-base"
+                            >
+                                View Announcements
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
 
-export default UserDashboard; 
+export default UserDashboard;

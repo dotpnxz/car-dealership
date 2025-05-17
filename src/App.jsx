@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Collection from './components/Collection';
@@ -9,26 +9,43 @@ import BookVisit from './components/BookVisit';
 import Location from './components/Location';
 import Footer from './components/Footer';
 import ReserveNow from './components/reservenow';
-import Recommendation from './components/recommendation';
+
 import RegistrationForm from './components/RegistrationForm';
 import LoginForm from './components/LoginForm';
 import Profile from './components/profile';
-import { AuthProvider } from './components/AuthContext';
+import { AuthProvider, AuthContext } from './components/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './layouts/AdminLayout';
 import UserManagement from './components/UserManagement';
 import CarManagement from './components/CarManagement';
 import BookingManagement from './components/BookingManagement';
-import ReservedCars from './components/ReservedCars';
 import StaffLayout from './layouts/StaffLayout';
 import StaffDashboard from './components/StaffDashboard';
-import UserProfile from './components/UserProfile';
 import UserDashboard from './components/UserDashboard';
 import ReservationList from './components/ReservationList';
+import NavSidebar from './components/NavSidebar';
+import MyBookings from './components/MyBookings';
+import MyReservations from './components/MyReservations';
+import AdminDashboard from './components/AdminDashboard';
+import Announcements from './components/Announcements'; // Import Announcements
+import UserLayout from './layouts/UserLayout';
+import Guide from './components/Guide';
+import SellerLayout from './layouts/SellerLayout';
+import SellerDashboard from './components/SellerDashboard'; // Add this import
+import MyCars from './components/MyCars';
+import SellerManagement from './components/SellerManagement';
+import ResetPassword from './components/ResetPassword';
+import LoanRequirements from './components/LoanRequirements';
+import AvailProcess from './components/AvailProcess';
 
 const MainContent = () => {
     const location = useLocation();
-    const isAdminOrStaff = location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff');
+    const { user, isLoggedIn, handleLogout } = React.useContext(AuthContext);
+    const isAdminOrStaff = location.pathname.startsWith('/admin') || 
+                          location.pathname.startsWith('/staff') ||
+                          location.pathname.startsWith('/seller') ||  
+                          location.pathname.startsWith('/buyer');
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     React.useEffect(() => {
         const section = location.pathname.slice(1) || 'home';
@@ -48,78 +65,184 @@ const MainContent = () => {
     return (
         <>
             {!isAdminOrStaff && <Navbar />}
-            <main className="flex-grow">
-                <Routes>
-                    <Route path="/home" element={<Home />} />
-                    <Route path="/book-visit" element={<BookVisit />} />
-                    <Route path="/reservenow/:id?" element={<ReserveNow />} />
-                    <Route path="/recommendation" element={<Recommendation />} />
-                    <Route path="/RegistrationForm" element={<RegistrationForm />} />
-                    <Route path="/LoginForm" element={<LoginForm />} />   
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="*" element={
-                        <>
-                            <Home />
-                            <Collection />
-                            <Sell />
-                            <AboutUs />
-                            <Location />
-                        </>
-                    } />
-                    
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={
-                        <ProtectedRoute requiredRole="admin">
-                            <AdminLayout />
-                        </ProtectedRoute>
-                    }>
-                        <Route index element={<Navigate to="users" replace />} />
-                        <Route path="users" element={<UserManagement />} />
-                        <Route path="cars" element={<CarManagement />} />
-                        <Route path="bookings" element={<BookingManagement />} />
-                        <Route path="reserved-cars" element={<ReservedCars />} />
-                        <Route path="reservations" element={<ReservationList />} />
-                        <Route path="profile" element={<Profile />} />
-                    </Route>
+            <div className="relative min-h-screen bg-gray-100">
+                <NavSidebar 
+                    isLoggedIn={isLoggedIn} 
+                    accountType={user?.accountType || 'buyer'} 
+                    onLogout={handleLogout} 
+                    isCollapsed={sidebarCollapsed}
+                    setIsCollapsed={setSidebarCollapsed}
+                />
+                <div className={`transition-all duration-300 ${isLoggedIn ? (sidebarCollapsed ? 'ml-16' : 'ml-64') : ''}`}>
+                    <main className="flex-grow">
+                        <Routes>
+                            <Route path="/home" element={<Home />} />
+                            <Route path="/book-visit" element={<BookVisit />} />
+                            <Route path="/reservenow/:id?" element={<ReserveNow />} />
+                            <Route path="/RegistrationForm" element={<RegistrationForm />} />
+                            <Route path="/LoginForm" element={<LoginForm />} />  
+                            <Route path="/Collection" element={ <Collection />} />  
+                            <Route path="/Sell" element={ <Sell />} />  
+                         
+                            <Route path="*" element={
+                                <>
+                                    <Home />
+                                    <AboutUs />
+                                    <Location />
+                                    <Guide />
+                                </> 
+                            } />
+                            
+                            {/* Admin Routes */}
+                            <Route path="/admin" element={
+                                <ProtectedRoute requiredRole="admin">
+                                    <AdminLayout />
+                                </ProtectedRoute>
+                            }>
+                                <Route index element={<AdminDashboard />} />
+                                <Route path="announcements" element={<Announcements />} /> {/* Add Announcements route */}
+                            </Route>
 
-                    {/* Staff Routes */}
-                    <Route path="/staff" element={
-                        <ProtectedRoute requiredRole="staff">
-                            <StaffLayout />
-                        </ProtectedRoute>
-                    }>
-                        <Route index element={<StaffDashboard />} />
-                        <Route path="cars" element={<CarManagement />} />
-                        <Route path="bookings" element={<BookingManagement />} />
-                    </Route>
+                            {/* Independent Admin Routes */}
+                            <Route path="/admin/users" element={
+                                <ProtectedRoute requiredRole="admin">
+                                    <UserManagement />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/admin/cars" element={
+                                <ProtectedRoute requiredRole="admin">
+                                    <CarManagement />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/admin/bookings" element={
+                                <ProtectedRoute requiredRole="admin">
+                                    <BookingManagement />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/admin/reservations" element={
+                                <ProtectedRoute requiredRole="admin">
+                                    <ReservationList />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/admin/seller-applications" element={
+                                <ProtectedRoute requiredRole="admin">
+                                    <SellerManagement />
+                                </ProtectedRoute>
+                            } />
 
-                    <Route 
-                        path="/profile" 
-                        element={
-                            <ProtectedRoute>
-                                <UserProfile />
-                            </ProtectedRoute>
-                        } 
-                    />
+                            {/* Staff Routes */}
+                            <Route path="/staff" element={
+                                <ProtectedRoute requiredRole="staff">
+                                    <StaffLayout />
+                                </ProtectedRoute>
+                            }>
+                                <Route index element={<StaffDashboard />} />
+                                <Route path="announcements" element={<Announcements />} />
+                            </Route>
 
-                    <Route path="/dashboard" element={<UserDashboard />} />
-                </Routes>
-            </main>
+                             {/* Independent Staff Routes */}
+                              <Route path="staff/manage-profile" element={
+                                <ProtectedRoute requiredRole="staff">
+                                    <Profile />
+                                </ProtectedRoute>
+                            } />
+                             <Route path="/staff/manage-cars" element={
+                                <ProtectedRoute requiredRole="staff">
+                                    <CarManagement />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/staff/manage-bookings" element={
+                                <ProtectedRoute requiredRole="staff">
+                                    <BookingManagement />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/staff/manage-reservations" element={
+                                <ProtectedRoute requiredRole="staff">
+                                    <ReservationList />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/staff/seller-applications" element={
+                                <ProtectedRoute requiredRole="staff">
+                                    <SellerManagement />
+                                </ProtectedRoute>
+                            } />
+
+                             {/* Buyer Routes */}
+                            <Route path="/buyer" element={
+                                <ProtectedRoute requiredRole="buyer">
+                                    <UserLayout />
+                                </ProtectedRoute>
+                            }>
+                                <Route index element={<UserDashboard />} />
+                                <Route path="announcements" element={<Announcements />} />
+                            </Route>
+
+                            {/* User specific routes */}
+                            <Route path="/buyer/profile" element={
+                                <ProtectedRoute requiredRole="buyer">
+                                    <Profile />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/buyer/mybookings" element={
+                                <ProtectedRoute requiredRole="buyer">
+                                    <MyBookings />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/buyer/myreservations" element={
+                                <ProtectedRoute requiredRole="buyer">
+                                    <MyReservations />
+                                </ProtectedRoute>
+                            } />
+
+                             {/* Seller Routes */}
+                            <Route path="/seller" element={
+                                <ProtectedRoute requiredRole="seller">
+                                    <SellerLayout />
+                                </ProtectedRoute>
+                            }>
+                                <Route index element={<SellerDashboard />} />
+                                <Route path="announcements" element={<Announcements />} />
+                            </Route>
+
+                            {/* Independent Seller Routes */}
+                            <Route path="/seller/profile" element={
+                                <ProtectedRoute requiredRole="seller">
+                                    <Profile />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/seller/mycars" element={
+                                <ProtectedRoute requiredRole="seller">
+                                    <MyCars />
+                                </ProtectedRoute>
+                            } />
+
+                            {/* Auth Routes */}
+                            <Route path="/login" element={<LoginForm />} />
+                            <Route path="/register" element={<RegistrationForm />} />
+                            <Route path="/reset-password" element={<ResetPassword />} />
+                            <Route path="/loan-requirements" element={<LoanRequirements />} />
+                            <Route path="/avail-process" element={<AvailProcess />} />
+                        </Routes>
+                    </main>
+                </div>
+            </div>
             {!isAdminOrStaff && <Footer />}
         </>
-    );
-};
+    );      
+};      
 
 const App = () => {
     return (
-        <AuthProvider>
-            <Router>
+        <Router>
+            <AuthProvider>
                 <div className="min-h-screen flex flex-col">
-                    <MainContent />
+                    <div className="flex-grow">
+                        <MainContent />
+                    </div>
                 </div>
-            </Router>
-        </AuthProvider>
+            </AuthProvider>
+        </Router>
     );
-};
+}
 
 export default App;
