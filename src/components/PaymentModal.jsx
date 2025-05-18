@@ -87,13 +87,13 @@ const PaymentModal = ({ isOpen, onClose, reservation }) => {
                             onClick={generateQR}
                             className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
                         >
-                            Pay with GCash
+                            Pay with QR Code
                         </button>
                         <button
                             onClick={generatePaymentLink}
                             className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
                         >
-                            Pay with Card
+                            Pay with Link
                         </button>
                     </div>
                 )}

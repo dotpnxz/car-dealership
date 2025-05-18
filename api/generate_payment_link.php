@@ -17,6 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+require_once(__DIR__ . '/../config/config.php');
+
 try {
     $data = json_decode(file_get_contents('php://input'), true);
     
@@ -27,6 +29,7 @@ try {
     require_once(__DIR__ . '/../vendor/autoload.php');
     
     $client = new \GuzzleHttp\Client();
+    $secretKey = getenv('PAYMONGO_SECRET_KEY');
     
     // Format amount for PayMongo (needs to be in smallest currency unit)
     $amount = (int)($data['amount'] * 100); // Convert to integer for PayMongo
@@ -45,7 +48,7 @@ try {
         ]),
         'headers' => [
             'accept' => 'application/json',
-            'authorization' => 'Basic c2tfdGVzdF9kVWZYZURHcDJXeEZ6eEdZWWFGRGJHOHg6',
+            'authorization' => 'Basic ' . base64_encode($secretKey),
             'content-type' => 'application/json',
         ],
     ]);

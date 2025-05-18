@@ -17,25 +17,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once(__DIR__ . '/../config/config.php');
 
 try {
-    $json = file_get_contents('php://input');
-    $data = json_decode($json);
-
-    if (!$data || !isset($data->amount)) {
-        throw new Exception('Invalid request data');
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (!isset($data['amount']) || !isset($data['reservation_id'])) {
+        throw new Exception('Missing required fields');
     }
 
     $client = new \GuzzleHttp\Client();
+    $secretKey = getenv('PAYMONGO_SECRET_KEY');
     
     $requestData = [
         'body' => json_encode([
             'data' => [
                 'attributes' => [
                     'kind' => 'instore',
-                    'amount' => (int)($data->amount * 100),
+                    'amount' => (int)($data['amount'] * 100),
                     'description' => "Car Reservation Payment",
-                    'notes' => "Reservation ID: " . ($data->reservation_id ?? 'N/A'),
+                    'notes' => "Reservation ID: " . ($data['reservation_id'] ?? 'N/A'),
                     'mobile_number' => '+639163768107'  // Replace with your GCash merchant number
                 ]
             ]
@@ -43,7 +44,7 @@ try {
         'headers' => [
             'Content-Type' => 'application/json',
             'accept' => 'application/json',
-            'authorization' => 'Basic c2tfdGVzdF9kVWZYZURHcDJXeEZ6eEdZWWFGRGJHOHg6'
+            'authorization' => 'Basic ' . base64_encode($secretKey),
         ]
     ];
 
@@ -56,7 +57,7 @@ try {
         'data' => [
             'qr_string' => $responseData->data->attributes->qr_string ?? null,
             'qr_image' => $responseData->data->attributes->qr_image ?? null,
-            'amount' => $data->amount,
+            'amount' => $data['amount'],
             'reference' => $responseData->data->id ?? null
         ]
     ]);
