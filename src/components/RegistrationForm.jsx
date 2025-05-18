@@ -66,6 +66,7 @@ const RegistrationForm = () => {
   const [registrationStatus, setRegistrationStatus] = useState(null); // To display success/error messages
   const [errors, setErrors] = useState({}); // To display validation errors
   const [isSubmitting, setIsSubmitting] = useState(false); // To manage submit button state
+  const [showPrivacyModal, setShowPrivacyModal] = useState(true); // Add this at the top with other states
 
   useEffect(() => {
     if (selectedRegion) {
@@ -785,6 +786,68 @@ const RegistrationForm = () => {
             </button>
           </div>
         </form>
+
+        {showPrivacyModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800">Data Privacy Notice</h2>
+                
+                <div className="prose prose-sm text-gray-600 space-y-4">
+                  <p className="font-semibold">
+                    In compliance with the Data Privacy Act of 2012 (RA 10173)
+                  </p>
+                  
+                  <div className="space-y-2">
+                    <p>We value and protect your personal information. When you register with us, we collect and process your data for the following purposes:</p>
+                    
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>To create and manage your account</li>
+                      <li>To process your car buying or selling transactions</li>
+                      <li>To communicate with you about your transactions</li>
+                      <li>To provide customer support</li>
+                      <li>To comply with legal requirements</li>
+                    </ul>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="font-semibold">Information We Collect:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>Personal identification details</li>
+                      <li>Contact information</li>
+                      <li>Address and location data</li>
+                      <li>Account credentials</li>
+                      <li>Transaction records</li>
+                    </ul>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="font-semibold">We ensure that:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>Your data is securely stored and protected</li>
+                      <li>Your information is only used for stated purposes</li>
+                      <li>Your data is only retained as long as necessary</li>
+                      <li>Your rights as a data subject are respected</li>
+                    </ul>
+                  </div>
+
+                  <p>
+                    By proceeding with registration, you acknowledge that you have read this privacy notice and consent to the collection and processing of your personal information.
+                  </p>
+                </div>
+
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={() => setShowPrivacyModal(false)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    I Understand
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
