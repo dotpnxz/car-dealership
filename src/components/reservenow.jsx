@@ -186,7 +186,14 @@ const ReserveNow = () => {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div>
                                     <p className="text-gray-600 text-sm sm:text-base">Price</p>
-                                    <p className="font-semibold text-base sm:text-lg">${car.price.toLocaleString()}</p>
+                                    <p className="font-semibold text-base sm:text-lg">
+                                        ₱{parseFloat(car.price).toLocaleString('en-PH', {
+                                            style: 'decimal',
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                            useGrouping: true
+                                        })}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-gray-600 text-sm sm:text-base">Category</p>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import usePhLocations from '../hooks/usePhLocations';
 import { securityQuestions } from '../utils/securityQuestions';
 
@@ -7,24 +8,32 @@ const RequiredIndicator = () => <span className="text-red-500">*</span>;
 const AlertMessage = ({ type, messages }) => {
   if (!messages || messages.length === 0) return null;
   
-  const bgColor = type === 'error' ? 'bg-red-100 border-red-500 text-red-700' : 'bg-green-100 border-green-500 text-green-700';
+  const bgColor = type === 'success' 
+      ? 'bg-green-100 border-green-500 text-green-700' 
+      : 'bg-red-100 border-red-500 text-red-700';
+  
+  const icon = type === 'success' 
+      ? '✓' 
+      : '⚠';
   
   return (
-    <div className={`${bgColor} border-l-4 p-4 mb-6 rounded`}>
-      {Array.isArray(messages) ? (
-        <ul className="list-disc list-inside">
-          {messages.map((message, index) => (
-            <li key={index}>{message}</li>
-          ))}
-        </ul>
-      ) : (
-        <p>{messages}</p>
-      )}
-    </div>
+      <div className={`${bgColor} border-l-4 p-4 mb-6 rounded flex items-start`}>
+          <span className="mr-2">{icon}</span>
+          {Array.isArray(messages) ? (
+              <ul className="list-disc list-inside">
+                  {messages.map((message, index) => (
+                      <li key={index}>{message}</li>
+                  ))}
+              </ul>
+          ) : (
+              <p>{messages}</p>
+          )}
+      </div>
   );
 };
 
 const RegistrationForm = () => {
+  const navigate = useNavigate();
   const { regions, getProvincesByRegion, getCitiesByProvince } = usePhLocations();
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedProvince, setSelectedProvince] = useState('');
@@ -242,8 +251,19 @@ const RegistrationForm = () => {
       if (data.success) {
         setRegistrationStatus({
           type: 'success',
-          messages: [data.message]
+          messages: [data.message || 'Registration successful!']
         });
+        
+        // Show success message and redirect after 2 seconds
+        setTimeout(() => {
+          navigate('/LoginForm', { 
+            state: { 
+              message: 'Registration successful! Please log in.',
+              type: 'success'
+            }
+          });
+        }, 2000);
+
         handleClear();
       } else {
         setRegistrationStatus({
