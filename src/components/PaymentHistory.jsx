@@ -42,6 +42,33 @@ const PaymentHistory = () => {
     }
   };
 
+  const handleRefund = async (paymentId) => {
+    if (!confirm('Are you sure you want to request a refund?')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch('http://localhost/car-dealership/api/request_refund.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ payment_id: paymentId })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to request refund');
+      }
+
+      // Refresh payment history after refund request
+      fetchPayments();
+    } catch (error) {
+      console.error('Error requesting refund:', error);
+      alert('Failed to request refund. Please try again later.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -124,14 +151,22 @@ const PaymentHistory = () => {
                       {payment.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {payment.status === 'paid' && (
-                      <button
-                        onClick={() => window.print()}
-                        className="text-blue-600 hover:text-blue-900 text-sm font-medium mr-2"
-                      >
-                        Print Receipt
-                      </button>
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => window.print()}
+                          className="px-3 py-1 bg-blue-100 text-blue-600 rounded-md hover:bg-blue-200"
+                        >
+                          Print Receipt
+                        </button>
+                        <button
+                          onClick={() => handleRefund(payment.id)}
+                          className="px-3 py-1 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
+                        >
+                          Request Refund
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

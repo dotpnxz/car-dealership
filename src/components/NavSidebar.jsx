@@ -66,6 +66,7 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
         { to: '/admin/seller-applications', icon: <ClipboardList size={20} />, label: 'Seller Management' },
         { to: '/admin/bookings', icon: <Calendar size={20} />, label: 'Booking Management' },
         { to: '/admin/reservations', icon: <ClipboardList size={20} />, label: 'Reservation Management' },
+        { to: '/admin/payment-management', icon: <CreditCard size={20} />, label: 'Payment Management' },
       ],
       staff: [
         { to: '/staff/manage-profile', icon: <UserCircle size={20} />, label: 'Staff Profile' },
@@ -73,6 +74,7 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
         { to: '/staff/seller-applications', icon: <ClipboardList size={20} />, label: 'Seller Management' },
         { to: '/staff/manage-bookings', icon: <Calendar size={20} />, label: 'Manage Bookings' },
         { to: '/staff/manage-reservations', icon: <ClipboardList size={20} />, label: 'Reservation Management' },
+        { to: '/staff/payment-management', icon: <CreditCard size={20} />, label: 'Payment Management' },
       ],
       buyer: [
         { to: '/buyer/profile', icon: <UserCircle size={20} />, label: 'Profile' },

@@ -45,8 +45,9 @@ try {
         LEFT JOIN users u ON rc.user_id = u.id
         WHERE ";
 
-    if ($accountType === 'admin') {
-        $sql .= "1=1"; // Admin sees all
+    // Modified condition to include staff
+    if ($accountType === 'admin' || $accountType === 'staff') {
+        $sql .= "1=1"; // Admin and staff see all
     } else {
         $sql .= "rc.user_id = :user_id"; // Regular users see their own
     }
@@ -55,8 +56,8 @@ try {
 
     $stmt = $conn->prepare($sql);
 
-    // Bind parameter only if not admin
-    if ($accountType !== 'admin') {
+    // Modified condition to include staff
+    if ($accountType !== 'admin' && $accountType !== 'staff') {
         $stmt->bindParam(':user_id', $userId);
     }
 

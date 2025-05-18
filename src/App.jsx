@@ -38,6 +38,7 @@ import SellerManagement from './components/SellerManagement';
 import ResetPassword from './components/ResetPassword';
 import LoanRequirements from './components/LoanRequirements';
 import AvailProcess from './components/AvailProcess';
+import PaymentManagement from './components/PaymentManagement';
 
 const MainContent = () => {
     const location = useLocation();
@@ -130,6 +131,11 @@ const MainContent = () => {
                                     <SellerManagement />
                                 </ProtectedRoute>
                             } />
+                            <Route path="/admin/payment-management" element={
+                                <ProtectedRoute requiredRole="admin">
+                                    <PaymentManagement />
+                                </ProtectedRoute>
+                            } />
 
                             {/* Staff Routes */}
                             <Route path="/staff" element={
@@ -165,6 +171,11 @@ const MainContent = () => {
                             <Route path="/staff/seller-applications" element={
                                 <ProtectedRoute requiredRole="staff">
                                     <SellerManagement />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/staff/payment-management" element={
+                                <ProtectedRoute requiredRole="staff">
+                                    <PaymentManagement />
                                 </ProtectedRoute>
                             } />
 

@@ -271,7 +271,7 @@ const ReservationList = () => {
                                         >
                                             Status {getSortIndicator('status')}
                                         </th>
-                                        {accountType === 'admin' && (
+                                        {(accountType === 'admin' || accountType === 'staff') && (
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Actions
                                             </th>
@@ -301,7 +301,7 @@ const ReservationList = () => {
                                                     {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
                                                 </span>
                                             </td>
-                                            {accountType === 'admin' && (
+                                            {(accountType === 'admin' || accountType === 'staff') && (
                                                 <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                     <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
                                                         <button
