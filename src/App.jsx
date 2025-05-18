@@ -9,6 +9,7 @@ import BookVisit from './components/BookVisit';
 import Location from './components/Location';
 import Footer from './components/Footer';
 import ReserveNow from './components/reservenow';
+import PaymentHistory from './components/PaymentHistory';
 
 import RegistrationForm from './components/RegistrationForm';
 import LoginForm from './components/LoginForm';
@@ -191,6 +192,11 @@ const MainContent = () => {
                             <Route path="/buyer/myreservations" element={
                                 <ProtectedRoute requiredRole="buyer">
                                     <MyReservations />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/buyer/payment-history" element={
+                                <ProtectedRoute requiredRole="buyer">
+                                    <PaymentHistory />
                                 </ProtectedRoute>
                             } />
 

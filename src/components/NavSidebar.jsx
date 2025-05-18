@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 import { Menu, X, Home, Car, BookOpen, UserCircle, LogOut, 
-         Settings, Users, ClipboardList, ShoppingCart, Calendar } from 'lucide-react';
+         Settings, Users, ClipboardList, ShoppingCart, Calendar, CreditCard } from 'lucide-react';
 
 const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, setIsCollapsed }) => {
   const [verifiedAccountType, setVerifiedAccountType] = useState(propAccountType);
@@ -78,6 +78,7 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
         { to: '/buyer/profile', icon: <UserCircle size={20} />, label: 'Profile' },
         { to: '/buyer/mybookings', icon: <Calendar size={20} />, label: 'My Bookings' },
         { to: '/buyer/myreservations', icon: <ClipboardList size={20} />, label: 'My Reservations' },
+        { to: '/buyer/payment-history', icon: <CreditCard size={20} />, label: 'Payment History' },
       ],
       seller: [
         { to: '/seller/profile', icon: <UserCircle size={20} />, label: 'Profile' },

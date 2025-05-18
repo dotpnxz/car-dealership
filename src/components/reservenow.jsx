@@ -78,7 +78,7 @@ const ReserveNow = () => {
             }
 
             alert('Reservation created successfully!');
-            navigate('/reservationlist');
+           
         } catch (err) {
             console.error('Reservation error:', err);
             setError(err.message || 'Failed to create reservation');
