@@ -115,6 +115,7 @@ const MyReservations = () => {
                                         <span className={`px-3 py-1 rounded-full text-sm ${
                                             reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                             reservation.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                                            reservation.status === 'reserved' ? 'bg-green-100 text-green-800' :
                                             'bg-red-100 text-red-800'
                                         }`}>
                                             {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}

@@ -100,14 +100,48 @@ try {
                 $stmt->bindValue(1, $amount, PDO::PARAM_STR); // Use PDO::PARAM_STR for decimals
                 $stmt->bindValue(2, $referenceId, PDO::PARAM_INT); // Assuming id is an integer
 
-                if (!$stmt->execute()) {
-                    throw new Exception("Database update failed: " . print_r($stmt->errorInfo(), true));
+                if ($stmt->execute()) {
+                    error_log("Database updated successfully. Affected reserved_cars rows: " . $stmt->rowCount());
+
+                    // Retrieve the car_id from the reserved_cars table
+                    $selectSql = "SELECT car_id FROM reserved_cars WHERE id = ?";
+                    $selectStmt = $conn->prepare($selectSql);
+                    if ($selectStmt) {
+                        $selectStmt->bindValue(1, $referenceId, PDO::PARAM_INT); // Assuming reserved_cars.id is INT
+                        $selectStmt->execute();
+                        $result = $selectStmt->fetch(PDO::FETCH_ASSOC);
+
+                        if ($result && isset($result['car_id'])) {
+                            $carIdToUpdate = $result['car_id'];
+                            $newCarStatus = 'reserved'; // Or your desired status in the cars table
+
+                            // Update the cars table using car_id
+                            $updateCarSql = "UPDATE cars SET status = ? WHERE id = ?";
+                            $updateCarStmt = $conn->prepare($updateCarSql);
+                            if ($updateCarStmt) {
+                                $updateCarStmt->bindValue(1, $newCarStatus, PDO::PARAM_STR);
+                                $updateCarStmt->bindValue(2, $carIdToUpdate, PDO::PARAM_INT); // Assuming cars.car_id is INT
+
+                                if ($updateCarStmt->execute()) {
+                                    error_log("Cars table updated successfully for car_id: " . $carIdToUpdate . " to status: " . $newCarStatus);
+                                } else {
+                                    error_log("Error updating cars table: " . print_r($updateCarStmt->errorInfo(), true));
+                                }
+                            } else {
+                                error_log("Error preparing update statement for cars table: " . print_r($conn->errorInfo(), true));
+                            }
+                        } else {
+                            error_log("Could not retrieve car_id for reservation ID: " . $referenceId);
+                        }
+                    } else {
+                        error_log("Error preparing select statement for car_id: " . print_r($conn->errorInfo(), true));
+                    }
+                } else {
+                    error_log("Database update failed for reserved_cars: " . print_r($stmt->errorInfo(), true));
                 }
 
-                error_log("Database updated successfully. Affected rows: " . $stmt->rowCount());
-
                 if ($stmt->rowCount() === 0) {
-                    error_log("Warning: No rows were updated for Reference ID: {$referenceId}");
+                    error_log("Warning: No rows were updated for Reference ID: {$referenceId} in reserved_cars.");
                 }
             }
         } else {

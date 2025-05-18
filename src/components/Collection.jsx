@@ -490,9 +490,29 @@ const Collection = () => {
                       >
                         Close
                       </button>
-                      <Link to="/reservenow" state={{ carId: selectedCar?.id }}>
-                        <button className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
-                          Reserve Now
+                      <Link 
+                        to={selectedCar?.status !== 'reserved' ? "/reservenow" : "#"} 
+                        state={{ carId: selectedCar?.id }}
+                        className={`${
+                          selectedCar?.status === 'reserved' 
+                            ? 'opacity-50 cursor-not-allowed' 
+                            : 'hover:opacity-90'
+                        }`}
+                        onClick={(e) => {
+                          if (selectedCar?.status === 'reserved') {
+                            e.preventDefault();
+                          }
+                        }}
+                      >
+                        <button 
+                          className={`bg-red-500 text-white px-4 py-2 rounded-lg transition ${
+                            selectedCar?.status === 'reserved' 
+                              ? 'opacity-50 cursor-not-allowed' 
+                              : 'hover:bg-red-600'
+                          }`}
+                          disabled={selectedCar?.status === 'reserved'}
+                        >
+                          {selectedCar?.status === 'reserved' ? 'Reserved' : 'Reserve Now'}
                         </button>
                       </Link>
                     </div>
