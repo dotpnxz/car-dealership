@@ -87,7 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address = isset($data['address']) ? trim($data['address']) : '';
         $surname = isset($data['surname']) ? trim($data['surname']) : '';
         $firstName = isset($data['firstName']) ? trim($data['firstName']) : '';
-        $secondName = isset($data['secondName']) ? trim($data['secondName']) : '';
         $middleName = isset($data['middleName']) ? trim($data['middleName']) : '';
         $streetAddress = isset($data['streetAddress']) ? trim($data['streetAddress']) : '';
         $city = isset($data['city']) ? trim($data['city']) : '';
@@ -149,12 +148,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Account type validation
-        $allowedTypes = ['buyer', 'seller'];
+        $allowedTypes = ['buyer']; // Removed 'seller' from allowed account types
         if (!in_array($accountType, $allowedTypes)) {
             http_response_code(400);
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Invalid account type. Must be either buyer or seller.'
+                'message' => 'Invalid account type. Must be buyer.'
             ]);
             exit;
         }
@@ -191,7 +190,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     email,
                     surname,
                     firstName,
-                    secondName,
                     middleName,
                     suffix,
                     birthDay,
@@ -212,7 +210,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     :email,
                     :surname,
                     :firstName,
-                    :secondName,
                     :middleName,
                     :suffix,
                     :birthDay,
@@ -235,7 +232,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':email', $email);
             $stmt->bindParam(':surname', $surname);
             $stmt->bindParam(':firstName', $firstName);
-            $stmt->bindParam(':secondName', $secondName);
             $stmt->bindParam(':middleName', $middleName);
             $stmt->bindParam(':suffix', $suffix);
             $stmt->bindParam(':birthDay', $birthDay, PDO::PARAM_INT);

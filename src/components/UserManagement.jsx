@@ -17,7 +17,6 @@ const UserManagement = () => {
         username: '',
         surname: '',
         firstName: '',
-        secondName: '',
         middleName: '',
         fullname: '',
         contactNo: '',
@@ -136,7 +135,6 @@ const UserManagement = () => {
                 username: '',
                 surname: '',
                 firstName: '',
-                secondName: '',
                 middleName: '',
                 fullname: '',
                 contactNo: '',
@@ -238,7 +236,6 @@ const UserManagement = () => {
         const nameParts = (user.fullname || '').split(' ');
         let surname = nameParts[0] || '';
         let firstName = nameParts[1] || '';
-        let secondName = '';
         let middleName = '';
         let suffix = '';
 
@@ -250,11 +247,10 @@ const UserManagement = () => {
             const nameWithoutSuffix = fullnameParts[0].split(' ');
             surname = nameWithoutSuffix[0] || '';
             firstName = nameWithoutSuffix[1] || '';
-            if (nameWithoutSuffix.length > 3) {
-                secondName = nameWithoutSuffix.slice(2, -1).join(' ');
-                middleName = nameWithoutSuffix[nameWithoutSuffix.length - 1];
-            } else if (nameWithoutSuffix.length === 3) {
-                middleName = nameWithoutSuffix[2];
+            if (nameWithoutSuffix.length > 2) {
+                middleName = nameWithoutSuffix.slice(2).join(' ');
+            } else if (nameWithoutSuffix.length === 2) {
+                middleName = nameWithoutSuffix[1];
             }
         }
 
@@ -262,7 +258,6 @@ const UserManagement = () => {
             username: user.username || '',
             surname,
             firstName,
-            secondName,
             middleName,
             fullname: user.fullname || '',
             contactNo: user.contactNo || '',
@@ -302,7 +297,6 @@ const UserManagement = () => {
             username: '',
             surname: '',
             firstName: '',
-            secondName: '',
             middleName: '',
             fullname: '',
             contactNo: '',
@@ -566,7 +560,7 @@ const UserManagement = () => {
                                             onChange={(e) => {
                                                 handleInputChange(e);
                                                 const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
-                                                const updatedFullname = `${e.target.value} ${formData.firstName || ''} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                const updatedFullname = `${e.target.value} ${formData.firstName || ''} ${formData.middleName || ''}${suffixText}`.trim();
                                                 setFormData(prev => ({ ...prev, fullname: updatedFullname }));
                                             }}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -580,7 +574,7 @@ const UserManagement = () => {
                                             onChange={(e) => {
                                                 handleInputChange(e);
                                                 const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
-                                                const updatedFullname = `${formData.surname || ''} ${e.target.value} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                const updatedFullname = `${formData.surname || ''} ${e.target.value} ${formData.middleName || ''}${suffixText}`.trim();
                                                 setFormData(prev => ({ ...prev, fullname: updatedFullname }));
                                             }}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -590,26 +584,13 @@ const UserManagement = () => {
                                     <div className="grid grid-cols-2 gap-4 mt-4">
                                         <input
                                             type="text"
-                                            name="secondName"
-                                            placeholder="Second Name (Optional)"
-                                            value={formData.secondName}
-                                            onChange={(e) => {
-                                                handleInputChange(e);
-                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
-                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${e.target.value} ${formData.middleName || ''}${suffixText}`.trim();
-                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
-                                            }}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                        <input
-                                            type="text"
                                             name="middleName"
                                             placeholder="Middle Name (Optional)"
                                             value={formData.middleName}
                                             onChange={(e) => {
                                                 handleInputChange(e);
                                                 const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
-                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.secondName || ''} ${e.target.value}${suffixText}`.trim();
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${e.target.value}${suffixText}`.trim();
                                                 setFormData(prev => ({ ...prev, fullname: updatedFullname }));
                                             }}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -626,7 +607,7 @@ const UserManagement = () => {
                                             onChange={(e) => {
                                                 handleInputChange(e);
                                                 const suffixText = e.target.value ? `, ${e.target.value}` : '';
-                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.middleName || ''}${suffixText}`.trim();
                                                 setFormData(prev => ({ ...prev, fullname: updatedFullname }));
                                             }}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -902,7 +883,7 @@ const UserManagement = () => {
                                             onChange={(e) => {
                                                 handleInputChange(e);
                                                 const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
-                                                const updatedFullname = `${e.target.value} ${formData.firstName || ''} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                const updatedFullname = `${e.target.value} ${formData.firstName || ''} ${formData.middleName || ''}${suffixText}`.trim();
                                                 setFormData(prev => ({ ...prev, fullname: updatedFullname }));
                                             }}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -916,7 +897,7 @@ const UserManagement = () => {
                                             onChange={(e) => {
                                                 handleInputChange(e);
                                                 const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
-                                                const updatedFullname = `${formData.surname || ''} ${e.target.value} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                const updatedFullname = `${formData.surname || ''} ${e.target.value} ${formData.middleName || ''}${suffixText}`.trim();
                                                 setFormData(prev => ({ ...prev, fullname: updatedFullname }));
                                             }}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -926,26 +907,13 @@ const UserManagement = () => {
                                     <div className="grid grid-cols-2 gap-4 mt-4">
                                         <input
                                             type="text"
-                                            name="secondName"
-                                            placeholder="Second Name (Optional)"
-                                            value={formData.secondName}
-                                            onChange={(e) => {
-                                                handleInputChange(e);
-                                                const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
-                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${e.target.value} ${formData.middleName || ''}${suffixText}`.trim();
-                                                setFormData(prev => ({ ...prev, fullname: updatedFullname }));
-                                            }}
-                                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        />
-                                        <input
-                                            type="text"
                                             name="middleName"
                                             placeholder="Middle Name (Optional)"
                                             value={formData.middleName}
                                             onChange={(e) => {
                                                 handleInputChange(e);
                                                 const suffixText = formData.suffix ? `, ${formData.suffix}` : '';
-                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.secondName || ''} ${e.target.value}${suffixText}`.trim();
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${e.target.value}${suffixText}`.trim();
                                                 setFormData(prev => ({ ...prev, fullname: updatedFullname }));
                                             }}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -962,7 +930,7 @@ const UserManagement = () => {
                                             onChange={(e) => {
                                                 handleInputChange(e);
                                                 const suffixText = e.target.value ? `, ${e.target.value}` : '';
-                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.secondName || ''} ${formData.middleName || ''}${suffixText}`.trim();
+                                                const updatedFullname = `${formData.surname || ''} ${formData.firstName || ''} ${formData.middleName || ''}${suffixText}`.trim();
                                                 setFormData(prev => ({ ...prev, fullname: updatedFullname }));
                                             }}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"

@@ -14,7 +14,8 @@ try {
 
     $conn = db_connect();
     
-    $stmt = $conn->prepare("SELECT id, CONCAT(COALESCE(firstName, ''), ' ', COALESCE(secondName, '')) as fullName FROM users WHERE id = ?");
+    // Remove secondName from SELECT and concatenation
+    $stmt = $conn->prepare("SELECT id, COALESCE(firstName, '') as fullName FROM users WHERE id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 

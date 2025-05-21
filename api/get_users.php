@@ -35,7 +35,6 @@ try {
         username, 
         CONCAT(surname, ' ', firstName,
             CASE WHEN suffix IS NOT NULL AND suffix != '' THEN CONCAT(' ', suffix) ELSE '' END,
-            CASE WHEN secondName IS NOT NULL AND secondName != '' THEN CONCAT(' ', secondName) ELSE '' END,
             CASE WHEN middleName IS NOT NULL AND middleName != '' THEN CONCAT(' ', middleName) ELSE '' END
         ) as fullname,
         contactNo,

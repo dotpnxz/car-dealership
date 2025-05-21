@@ -58,59 +58,6 @@ try {
                 'pendingSellingApplications' => (int)$conn->query("SELECT COUNT(*) FROM car_applications WHERE status = 'pending'")->fetchColumn()
             ];
             break;
-
-        case 'seller':
-            // First verify if seller exists
-            $verifyStmt = $conn->prepare("
-                SELECT id FROM users 
-                WHERE id = ? AND accountType = 'seller'
-            ");
-            $verifyStmt->execute([$userId]);
-            if (!$verifyStmt->fetch()) {
-                throw new Exception('Invalid seller account');
-            }
-
-            // Get seller-specific stats with error checking
-            $stmt = $conn->prepare("
-                SELECT 
-                    COUNT(*) as total,
-                    COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
-                    COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved,
-                    COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected
-                FROM car_applications 
-                WHERE user_id = ?
-            ");
-
-            if (!$stmt->execute([$userId])) {
-                throw new Exception('Failed to fetch seller statistics');
-            }
-
-            $sellerStats = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if ($sellerStats === false) {
-                // If no applications found, set all to 0
-                $stats = [
-                    'totalApplications' => 0,
-                    'pendingApplications' => 0,
-                    'approvedApplications' => 0,
-                    'rejectedApplications' => 0
-                ];
-            } else {
-                $stats = [
-                    'totalApplications' => (int)$sellerStats['total'],
-                    'pendingApplications' => (int)$sellerStats['pending'],
-                    'approvedApplications' => (int)$sellerStats['approved'],
-                    'rejectedApplications' => (int)$sellerStats['rejected']
-                ];
-            }
-
-            // Add debug information in development
-            if (defined('DEBUG') && DEBUG) {
-                error_log("Seller ID: " . $userId);
-                error_log("Seller Stats: " . print_r($sellerStats, true));
-            }
-            break;
-
         case 'buyer':
             // Prepare statements for buyer stats
             $stmt = $conn->prepare("

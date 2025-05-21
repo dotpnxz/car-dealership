@@ -15,7 +15,7 @@ const AvailProcess = () => {
         {
             number: "3",
             title: "SUBMIT THE REQUIREMENTS",
-            description: "Submit all the required documents to our webiste or office for verification and processing of your application with our financing partner."
+            description: "Submit all the required documents to our office for verification and processing of your application with our financing partner."
         },
         {
             number: "4",

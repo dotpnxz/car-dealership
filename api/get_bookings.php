@@ -54,7 +54,6 @@ try {
             b.assigned_to,
             CONCAT(
                 COALESCE(u.firstName, ''), ' ',
-                COALESCE(u.secondName, ''), ' ',
                 COALESCE(u.middleName, ''), ' ',
                 COALESCE(u.surname, ''),
                 CASE WHEN u.suffix IS NOT NULL AND u.suffix != '' THEN CONCAT(' ', u.suffix) ELSE '' END
@@ -62,7 +61,6 @@ try {
             u.contactNo as customer_phone,
             CONCAT(
                 COALESCE(s.firstName, ''), ' ',
-                COALESCE(s.secondName, ''), ' ',
                 COALESCE(s.middleName, ''), ' ',
                 COALESCE(s.surname, ''),
                 CASE WHEN s.suffix IS NOT NULL AND s.suffix != '' THEN CONCAT(' ', s.suffix) ELSE '' END

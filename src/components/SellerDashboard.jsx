@@ -2,11 +2,11 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const SellerDashboard = () => {
+const Dashboard = () => {
     const navigate = useNavigate();
     const { user } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
-    const [userName, setUserName] = useState('Seller');
+    const [userName, setUserName] = useState('User');
     const [stats, setStats] = useState({
         total_applications: 0,
         pending_applications: 0,
@@ -22,7 +22,7 @@ const SellerDashboard = () => {
                 });
                 const data = await response.json();
                 if (data.success && data.user && data.user.fullName) {
-                    setUserName(data.user.fullName.trim() || 'Seller');
+                    setUserName(data.user.fullName.trim() || 'User');
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -31,7 +31,7 @@ const SellerDashboard = () => {
             }
         };
 
-        const fetchSellerStats = async () => {
+        const fetchStats = async () => {
             try {
                 const response = await fetch('http://localhost/car-dealership/api/dashboard_stats.php', {
                     method: 'GET',
@@ -69,7 +69,7 @@ const SellerDashboard = () => {
         };
 
         fetchUserData();
-        fetchSellerStats();
+        fetchStats();
     }, []);
 
     if (loading) {
@@ -127,7 +127,7 @@ const SellerDashboard = () => {
                         <ul className="space-y-2">
                             <li 
                                 className="flex items-center text-gray-600 cursor-pointer hover:text-blue-500 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100"
-                                onClick={() => navigate('/seller/profile')}
+                                onClick={() => navigate('/profile')}
                             >
                                 <svg className="h-4 sm:h-5 w-4 sm:w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -156,7 +156,7 @@ const SellerDashboard = () => {
                         </p>
                         <div className="flex">
                             <button 
-                                onClick={() => navigate('/seller/announcements')} 
+                                onClick={() => navigate('/announcements')} 
                                 className="w-full bg-blue-500 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-colors text-sm sm:text-base"
                             >
                                 View Announcements
@@ -169,4 +169,4 @@ const SellerDashboard = () => {
     );
 };
 
-export default SellerDashboard;
+export default Dashboard;

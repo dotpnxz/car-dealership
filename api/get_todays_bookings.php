@@ -18,7 +18,6 @@ try {
     $query = "SELECT 
         b.*, 
         CONCAT(u.surname, ', ', u.firstName, 
-            COALESCE(CONCAT(' ', u.secondName), ''),
             COALESCE(CONCAT(' ', u.middleName), ''),
             COALESCE(CONCAT(' ', u.suffix), '')
         ) as customer_name,

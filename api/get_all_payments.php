@@ -44,7 +44,6 @@ try {
             rc.payment_status AS status,
             u.surname,
             u.firstName,
-            u.secondName,
             u.middleName,
             u.suffix,
             u.username AS user_name,

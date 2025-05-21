@@ -29,7 +29,7 @@ if (isset($_SESSION['user_id'])) {
         // Prepare SQL statement
         $sql = "SELECT 
                     id,
-                    surname, firstName, secondName, middleName, suffix,
+                    surname, firstName, middleName, suffix,
                     username, email, contactNo, gender,
                     birthDay, birthMonth, birthYear,
                     streetAddress, province, city, zipCode

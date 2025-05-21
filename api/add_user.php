@@ -35,14 +35,14 @@ try {
     $stmt = $conn->prepare("
         INSERT INTO users (
             username, password, 
-            surname, firstName, secondName, middleName, suffix,
+            surname, firstName, middleName, suffix,
             contactNo, gender, 
             birthDay, birthMonth, birthYear,
             streetAddress, city, province, zipCode,
             accountType
         ) VALUES (
             ?, ?, 
-            ?, ?, ?, ?, ?,
+            ?, ?, ?, ?,
             ?, ?, 
             ?, ?, ?,
             ?, ?, ?, ?,
@@ -55,7 +55,6 @@ try {
         $hashedPassword,
         $data['surname'],
         $data['firstName'],
-        $data['secondName'],
         $data['middleName'],
         $data['suffix'],
         $data['contactNo'],

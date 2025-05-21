@@ -115,7 +115,7 @@ const PaymentManagement = () => {
               <tr key={index}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-sm text-gray-900">
-                    {`${payment.surname}, ${payment.firstName} ${payment.middleName || ''} ${payment.secondName || ''} ${payment.suffix || ''}`}
+                    {`${payment.surname}, ${payment.firstName} ${payment.middleName || ''} ${payment.suffix || ''}`}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

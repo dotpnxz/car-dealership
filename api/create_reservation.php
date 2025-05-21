@@ -91,7 +91,6 @@ try {
             TRIM(CONCAT_WS(' ',
                 COALESCE(surname, ''),
                 COALESCE(firstName, ''),
-                COALESCE(secondName, ''),
                 COALESCE(middleName, ''),
                 COALESCE(suffix, '')
             )) as fullname,

@@ -146,7 +146,7 @@ const Sell = () => {
 
       // If everything is successful
       alert('Application submitted successfully!');
-      navigate('/seller/mycars'); // Replace window.location.href with navigate
+      // Removed navigation to '/seller/mycars'
 
     } catch (error) {
       console.error('Error details:', error);

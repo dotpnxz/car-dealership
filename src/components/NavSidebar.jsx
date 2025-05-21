@@ -51,8 +51,6 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
   if (!isLoggedIn || location.pathname === ('/staff/announcements')) return null;
   if (!isLoggedIn || location.pathname === ('/buyer')) return null;
   if (!isLoggedIn || location.pathname === ('/buyer/announcements')) return null;
-  if (!isLoggedIn || location.pathname === ('/seller')) return null;
-  if (!isLoggedIn || location.pathname === ('/seller/announcements')) return null;
 
   const getMenuItems = () => {
     const commonItems = [
@@ -63,7 +61,6 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
       admin: [
         { to: '/admin/users', icon: <Users size={20} />, label: 'User Management' },
         { to: '/admin/cars', icon: <Car size={20} />, label: 'Car Management' },
-        { to: '/admin/seller-applications', icon: <ClipboardList size={20} />, label: 'Seller Management' },
         { to: '/admin/bookings', icon: <Calendar size={20} />, label: 'Booking Management' },
         { to: '/admin/reservations', icon: <ClipboardList size={20} />, label: 'Reservation Management' },
         { to: '/admin/payment-management', icon: <CreditCard size={20} />, label: 'Payment Management' },
@@ -71,7 +68,6 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
       staff: [
         { to: '/staff/manage-profile', icon: <UserCircle size={20} />, label: 'Staff Profile' },
         { to: '/staff/manage-cars', icon: <Car size={20} />, label: 'Manage Cars' },
-        { to: '/staff/seller-applications', icon: <ClipboardList size={20} />, label: 'Seller Management' },
         { to: '/staff/manage-bookings', icon: <Calendar size={20} />, label: 'Manage Bookings' },
         { to: '/staff/manage-reservations', icon: <ClipboardList size={20} />, label: 'Reservation Management' },
         { to: '/staff/payment-management', icon: <CreditCard size={20} />, label: 'Payment Management' },
@@ -82,12 +78,6 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
         { to: '/buyer/myreservations', icon: <ClipboardList size={20} />, label: 'My Reservations' },
         { to: '/buyer/payment-history', icon: <CreditCard size={20} />, label: 'Payment History' },
       ],
-      seller: [
-        { to: '/seller/profile', icon: <UserCircle size={20} />, label: 'Profile' },
-        { to: '/seller/mycars', icon: <Car size={20} />, label: 'My Cars' },
-        
-      
-      ]
     };
 
     // Use verifiedAccountType instead of propAccountType

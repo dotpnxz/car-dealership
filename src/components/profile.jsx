@@ -5,7 +5,6 @@ const Profile = () => {
     const initialState = {
         surname: '',
         firstName: '',
-        secondName: '',
         middleName: '',
         suffix: '',
         username: '',

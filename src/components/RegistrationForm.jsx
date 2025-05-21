@@ -44,10 +44,8 @@ const RegistrationForm = () => {
     username: '',
     password: '',
     confirmPassword: '',
-    accountType: '', // Ensure this is included
     surname: '',
     firstName: '',
-    secondName: '',
     middleName: '',
     suffix: '',
     email: '',
@@ -58,7 +56,7 @@ const RegistrationForm = () => {
     gender: '',
     streetAddress: '',
     city: '',
-    province: '', // add province
+    province: '',
     zipCode: '',
     securityQuestion: '',
     securityAnswer: '',
@@ -125,11 +123,6 @@ const RegistrationForm = () => {
       errors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       errors.password = 'Passwords do not match';
-    }
-
-    // Account type validation
-    if (!formData.accountType) {
-      errors.accountType = 'Please select an account type';
     }
 
     // Name validation
@@ -243,7 +236,7 @@ const RegistrationForm = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ ...formData, accountType: 'buyer' })
       });
 
       const data = await parseResponse(response);
@@ -291,10 +284,8 @@ const RegistrationForm = () => {
       username: '',
       password: '',
       confirmPassword: '',
-      accountType: '', // Reset account type
       surname: '',
       firstName: '',
-      secondName: '',
       middleName: '',
       suffix: '',
       email: '',
@@ -305,12 +296,12 @@ const RegistrationForm = () => {
       gender: '',
       streetAddress: '',
       city: '',
-      province: '', // reset province
+      province: '',
       zipCode: '',
       securityQuestion: '',
       securityAnswer: '',
     });
-    setRegistrationStatus(null); // Clear any status messages
+    setRegistrationStatus(null);
   };
 
   const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
@@ -343,433 +334,351 @@ const RegistrationForm = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-6">
-            {/* Name Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="surname" className="block text-gray-700 text-sm font-bold mb-2">
-                    Surname
-                    <RequiredIndicator />
-                  </label>
-                  <input
-                    type="text"
-                    id="surname"
-                    name="surname"
-                    value={formData.surname}
-                    onChange={handleChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="secondName" className="block text-gray-700 text-sm font-bold mb-2">
-                    Second Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    id="secondName"
-                    name="secondName"
-                    value={formData.secondName}
-                    onChange={handleChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="firstName" className="block text-gray-700 text-sm font-bold mb-2">
-                    First Name
-                    <RequiredIndicator />
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="middleName" className="block text-gray-700 text-sm font-bold mb-2">
-                    Middle Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    id="middleName"
-                    name="middleName"
-                    value={formData.middleName}
-                    onChange={handleChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  />
-                </div>
-              </div>
+          {/* Name, Gender, Contact, Birthday Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label htmlFor="surname" className="block text-gray-700 text-sm font-bold mb-2">
+                Surname<RequiredIndicator />
+              </label>
+              <input
+                type="text"
+                id="surname"
+                name="surname"
+                value={formData.surname}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
             </div>
-
-            {/* Suffix and Gender Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="w-full">
-                <label htmlFor="suffix" className="block text-gray-700 text-sm font-bold mb-2">
-                  Suffix (Optional)
+            <div>
+              <label htmlFor="firstName" className="block text-gray-700 text-sm font-bold mb-2">
+                First Name<RequiredIndicator />
+              </label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="middleName" className="block text-gray-700 text-sm font-bold mb-2">
+                Middle Name (Optional)
+              </label>
+              <input
+                type="text"
+                id="middleName"
+                name="middleName"
+                value={formData.middleName}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+            </div>
+            <div>
+              <label htmlFor="suffix" className="block text-gray-700 text-sm font-bold mb-2">
+                Suffix (Optional)
+              </label>
+              <select
+                id="suffix"
+                name="suffix"
+                value={formData.suffix}
+                onChange={handleChange}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              >
+                <option value="">None</option>
+                <option value="Jr.">Jr.</option>
+                <option value="Sr.">Sr.</option>
+                <option value="II">II</option>
+                <option value="III">III</option>
+                <option value="IV">IV</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-gray-700 text-sm font-bold mb-2">
+                Gender<RequiredIndicator />
+              </label>
+              <div className="flex space-x-4">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    checked={formData.gender === 'male'}
+                    onChange={handleGenderChange}
+                    className="form-radio h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 focus:ring-2"
+                  />
+                  <span className="ml-2 text-gray-700">Male</span>
                 </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    checked={formData.gender === 'female'}
+                    onChange={handleGenderChange}
+                    className="form-radio h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 focus:ring-2"
+                  />
+                  <span className="ml-2 text-gray-700">Female</span>
+                </label>
+              </div>
+              {errors.gender && <p className="text-red-500 text-xs italic">{errors.gender}</p>}
+            </div>
+            <div>
+              <label htmlFor="contactNo" className="block text-gray-700 text-sm font-bold mb-2">
+                Contact No<RequiredIndicator />
+              </label>
+              <input
+                type="tel"
+                id="contactNo"
+                name="contactNo"
+                value={formData.contactNo}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                placeholder="+63-000-000-0000"
+              />
+              {errors.contactNo && <p className="text-red-500 text-xs italic">{errors.contactNo}</p>}
+            </div>
+            <div className="col-span-1 lg:col-span-2">
+              <label htmlFor="birthday" className="block text-gray-700 text-sm font-bold mb-2">
+                Birthday<RequiredIndicator />
+              </label>
+              <div className="flex space-x-2">
                 <select
-                  id="suffix"
-                  name="suffix"
-                  value={formData.suffix}
+                  name="birthDay"
+                  value={formData.birthDay}
                   onChange={handleChange}
-                  className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 >
-                  <option value="">None</option>
-                  <option value="Jr.">Jr.</option>
-                  <option value="Sr.">Sr.</option>
-                  <option value="II">II</option>
-                  <option value="III">III</option>
-                  <option value="IV">IV</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Gender
-                  <RequiredIndicator />
-                </label>
-                <div className="flex space-x-4">
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="male"
-                      checked={formData.gender === 'male'}
-                      onChange={handleGenderChange}
-                      className="form-radio h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 focus:ring-2"
-                    />
-                    <span className="ml-2 text-gray-700">Male</span>
-                  </label>
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="female"
-                      checked={formData.gender === 'female'}
-                      onChange={handleGenderChange}
-                      className="form-radio h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 focus:ring-2"
-                    />
-                    <span className="ml-2 text-gray-700">Female</span>
-                  </label>
-                </div>
-                {errors.gender && <p className="text-red-500 text-xs italic">{errors.gender}</p>}
-              </div>
-            </div>
-
-            {/* Contact and Birthday Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="w-full">
-                <label htmlFor="contactNo" className="block text-gray-700 text-sm font-bold mb-2">
-                  Contact No
-                  <RequiredIndicator />
-                </label>
-                <input
-                  type="tel"
-                  id="contactNo"
-                  name="contactNo"
-                  value={formData.contactNo}
-                  onChange={handleChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  placeholder="+63-000-000-0000"
-                />
-                {errors.contactNo && <p className="text-red-500 text-xs italic">{errors.contactNo}</p>}
-              </div>
-
-              <div className="w-full">
-                <label htmlFor="birthday" className="block text-gray-700 text-sm font-bold mb-2">
-                  Birthday
-                  <RequiredIndicator />
-                </label>
-                <div className="flex space-x-2">
-                  <select
-                    name="birthDay"
-                    value={formData.birthDay}
-                    onChange={handleChange}
-                    className="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  >
-                    <option value="">Day</option>
-                    {days.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    name="birthMonth"
-                    value={formData.birthMonth}
-                    onChange={handleChange}
-                    className="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  >
-                    <option value="">Month</option>
-                    {months.map((month, index) => (
-                      <option key={index} value={index + 1}>
-                        {month}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    name="birthYear"
-                    value={formData.birthYear}
-                    onChange={handleChange}
-                    className="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  >
-                    <option value="">Year</option>
-                    {years.map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {errors.birthday && <p className="text-red-500 text-xs italic">{errors.birthday}</p>}
-              </div>
-            </div>
-
-            {/* Account Information Section */}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">
-                  Username
-                  <RequiredIndicator />
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-                {errors.username && <p className="text-red-500 text-xs italic">{errors.username}</p>}
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
-                  Email Address
-                  <RequiredIndicator />
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-                {errors.email && <p className="text-red-500 text-xs italic">{errors.email}</p>}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
-                    Password
-                    <RequiredIndicator />
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    required
-                  />
-                  {errors.password && <p className="text-red-500 text-xs italic">{errors.password}</p>}
-                </div>
-                <div>
-                  <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-bold mb-2">
-                    Confirm Password
-                    <RequiredIndicator />
-                  </label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    required
-                  />
-                  {errors.confirmPassword && <p className="text-red-500 text-xs italic">{errors.confirmPassword}</p>}
-                </div>
-              </div>
-            </div>
-
-            {/* Address Section */}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="streetAddress" className="block text-gray-700 text-sm font-bold mb-2">
-                  Street Address
-                  <RequiredIndicator />
-                </label>
-                <input
-                  type="text"
-                  id="streetAddress"
-                  name="streetAddress"
-                  value={formData.streetAddress}
-                  onChange={handleChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label htmlFor="region" className="block text-gray-700 text-sm font-bold mb-2">
-                    Region
-                    <RequiredIndicator />
-                  </label>
-                  <select
-                    id="region"
-                    value={selectedRegion}
-                    onChange={(e) => setSelectedRegion(e.target.value)}
-                    className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    required
-                  >
-                    <option value="">Select Region</option>
-                    {regions.map(region => (
-                      <option key={region} value={region}>{region}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label htmlFor="province" className="block text-gray-700 text-sm font-bold mb-2">
-                    Province
-                    <RequiredIndicator />
-                  </label>
-                  <select
-                    id="province"
-                    name="province"
-                    value={formData.province}
-                    onChange={handleChange}
-                    className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    required
-                  >
-                    <option value="">Select Province</option>
-                    {availableProvinces.map(province => (
-                      <option key={province} value={province}>{province}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label htmlFor="city" className="block text-gray-700 text-sm font-bold mb-2">
-                    City
-                    <RequiredIndicator />
-                  </label>
-                  <select
-                    id="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    name="city"
-                    className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    required
-                  >
-                    <option value="">Select City</option>
-                    {availableCities.map(city => (
-                      <option key={city} value={city}>{city}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label htmlFor="zipCode" className="block text-gray-700 text-sm font-bold mb-2">
-                    ZIP Code
-                    <RequiredIndicator />
-                  </label>
-                  <input
-                    type="text"
-                    id="zipCode"
-                    name="zipCode"
-                    value={formData.zipCode}
-                    onChange={handleChange}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Security Question Section */}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="securityQuestion" className="block text-gray-700 text-sm font-bold mb-2">
-                  Security Question
-                  <RequiredIndicator />
-                </label>
-                <select
-                  id="securityQuestion"
-                  name="securityQuestion"
-                  value={formData.securityQuestion}
-                  onChange={handleChange}
-                  className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                >
-                  <option value="">Select Security Question</option>
-                  {securityQuestions.map((question, index) => (
-                    <option key={index} value={question}>
-                      {question}
-                    </option>
+                  <option value="">Day</option>
+                  {days.map((day) => (
+                    <option key={day} value={day}>{day}</option>
                   ))}
                 </select>
-                {errors.securityQuestion && (
-                  <p className="text-red-500 text-xs italic">{errors.securityQuestion}</p>
-                )}
-              </div>
-
-              <div>
-                <label htmlFor="securityAnswer" className="block text-gray-700 text-sm font-bold mb-2">
-                  Security Answer
-                  <RequiredIndicator />
-                </label>
-                <input
-                  type="text"
-                  id="securityAnswer"
-                  name="securityAnswer"
-                  value={formData.securityAnswer}
-                  onChange={handleChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-                {errors.securityAnswer && (
-                  <p className="text-red-500 text-xs italic">{errors.securityAnswer}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Account Type Section */}
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="accountType" className="block text-gray-700 text-sm font-bold mb-2">
-                  Account Type
-                  <RequiredIndicator />
-                </label>
                 <select
-                  id="accountType"
-                  name="accountType"
-                  value={formData.accountType}
+                  name="birthMonth"
+                  value={formData.birthMonth}
                   onChange={handleChange}
-                  className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
+                  className="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 >
-                  <option value="">Select Account Type</option>
-                  <option value="buyer">Buyer</option>
-                  <option value="seller">Seller</option>
+                  <option value="">Month</option>
+                  {months.map((month, index) => (
+                    <option key={index} value={index + 1}>{month}</option>
+                  ))}
+                </select>
+                <select
+                  name="birthYear"
+                  value={formData.birthYear}
+                  onChange={handleChange}
+                  className="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                >
+                  <option value="">Year</option>
+                  {years.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
                 </select>
               </div>
+              {errors.birthday && <p className="text-red-500 text-xs italic">{errors.birthday}</p>}
             </div>
           </div>
 
-          <div className="flex justify-end space-x-4 mt-6"> {/* Added space-x-4 for spacing between buttons */}
+          {/* Username & Email */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">
+                Username<RequiredIndicator />
+              </label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
+              {errors.username && <p className="text-red-500 text-xs italic">{errors.username}</p>}
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
+                Email Address<RequiredIndicator />
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
+              {errors.email && <p className="text-red-500 text-xs italic">{errors.email}</p>}
+            </div>
+          </div>
+
+          {/* Passwords */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
+                Password<RequiredIndicator />
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
+              {errors.password && <p className="text-red-500 text-xs italic">{errors.password}</p>}
+            </div>
+            <div>
+              <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-bold mb-2">
+                Confirm Password<RequiredIndicator />
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
+              {errors.confirmPassword && <p className="text-red-500 text-xs italic">{errors.confirmPassword}</p>}
+            </div>
+          </div>
+
+          {/* Address Section */}
+          <div className="mt-4">
+            <label htmlFor="streetAddress" className="block text-gray-700 text-sm font-bold mb-2">
+              Street Address<RequiredIndicator />
+            </label>
+            <input
+              type="text"
+              id="streetAddress"
+              name="streetAddress"
+              value={formData.streetAddress}
+              onChange={handleChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+            <div>
+              <label htmlFor="region" className="block text-gray-700 text-sm font-bold mb-2">
+                Region<RequiredIndicator />
+              </label>
+              <select
+                id="region"
+                value={selectedRegion}
+                onChange={(e) => setSelectedRegion(e.target.value)}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              >
+                <option value="">Select Region</option>
+                {regions.map(region => (
+                  <option key={region} value={region}>{region}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="province" className="block text-gray-700 text-sm font-bold mb-2">
+                Province<RequiredIndicator />
+              </label>
+              <select
+                id="province"
+                name="province"
+                value={formData.province}
+                onChange={handleChange}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              >
+                <option value="">Select Province</option>
+                {availableProvinces.map(province => (
+                  <option key={province} value={province}>{province}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="city" className="block text-gray-700 text-sm font-bold mb-2">
+                City<RequiredIndicator />
+              </label>
+              <select
+                id="city"
+                value={formData.city}
+                onChange={handleChange}
+                name="city"
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              >
+                <option value="">Select City</option>
+                {availableCities.map(city => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="zipCode" className="block text-gray-700 text-sm font-bold mb-2">
+                ZIP Code<RequiredIndicator />
+              </label>
+              <input
+                type="text"
+                id="zipCode"
+                name="zipCode"
+                value={formData.zipCode}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              />
+            </div>
+          </div>
+
+          {/* Security Question & Answer */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label htmlFor="securityQuestion" className="block text-gray-700 text-sm font-bold mb-2">
+                Security Question<RequiredIndicator />
+              </label>
+              <select
+                id="securityQuestion"
+                name="securityQuestion"
+                value={formData.securityQuestion}
+                onChange={handleChange}
+                className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              >
+                <option value="">Select Security Question</option>
+                {securityQuestions.map((question, index) => (
+                  <option key={index} value={question}>{question}</option>
+                ))}
+              </select>
+              {errors.securityQuestion && (
+                <p className="text-red-500 text-xs italic">{errors.securityQuestion}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="securityAnswer" className="block text-gray-700 text-sm font-bold mb-2">
+                Security Answer<RequiredIndicator />
+              </label>
+              <input
+                type="text"
+                id="securityAnswer"
+                name="securityAnswer"
+                value={formData.securityAnswer}
+                onChange={handleChange}
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required
+              />
+              {errors.securityAnswer && (
+                <p className="text-red-500 text-xs italic">{errors.securityAnswer}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-4 mt-6">
             <button
               type="button"
               className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"

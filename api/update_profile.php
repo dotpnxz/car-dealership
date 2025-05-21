@@ -58,7 +58,6 @@ try {
     $sql = "UPDATE users SET 
             surname = ?,
             firstName = ?,
-            secondName = ?,
             middleName = ?,
             suffix = ?,
             contactNo = ?,
@@ -75,7 +74,6 @@ try {
     $params = [
         $data['surname'],
         $data['firstName'],
-        $data['secondName'],
         $data['middleName'],
         $data['suffix'],
         $data['contactNo'],

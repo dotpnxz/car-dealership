@@ -31,10 +31,6 @@ import AdminDashboard from './components/AdminDashboard';
 import Announcements from './components/Announcements'; // Import Announcements
 import UserLayout from './layouts/UserLayout';
 import Guide from './components/Guide';
-import SellerLayout from './layouts/SellerLayout';
-import SellerDashboard from './components/SellerDashboard'; // Add this import
-import MyCars from './components/MyCars';
-import SellerManagement from './components/SellerManagement';
 import ResetPassword from './components/ResetPassword';
 import LoanRequirements from './components/LoanRequirements';
 import AvailProcess from './components/AvailProcess';
@@ -45,7 +41,6 @@ const MainContent = () => {
     const { user, isLoggedIn, handleLogout } = React.useContext(AuthContext);
     const isAdminOrStaff = location.pathname.startsWith('/admin') || 
                           location.pathname.startsWith('/staff') ||
-                          location.pathname.startsWith('/seller') ||  
                           location.pathname.startsWith('/buyer');
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -126,11 +121,6 @@ const MainContent = () => {
                                     <ReservationList />
                                 </ProtectedRoute>
                             } />
-                            <Route path="/admin/seller-applications" element={
-                                <ProtectedRoute requiredRole="admin">
-                                    <SellerManagement />
-                                </ProtectedRoute>
-                            } />
                             <Route path="/admin/payment-management" element={
                                 <ProtectedRoute requiredRole="admin">
                                     <PaymentManagement />
@@ -168,11 +158,6 @@ const MainContent = () => {
                                     <ReservationList />
                                 </ProtectedRoute>
                             } />
-                            <Route path="/staff/seller-applications" element={
-                                <ProtectedRoute requiredRole="staff">
-                                    <SellerManagement />
-                                </ProtectedRoute>
-                            } />
                             <Route path="/staff/payment-management" element={
                                 <ProtectedRoute requiredRole="staff">
                                     <PaymentManagement />
@@ -208,28 +193,6 @@ const MainContent = () => {
                             <Route path="/buyer/payment-history" element={
                                 <ProtectedRoute requiredRole="buyer">
                                     <PaymentHistory />
-                                </ProtectedRoute>
-                            } />
-
-                             {/* Seller Routes */}
-                            <Route path="/seller" element={
-                                <ProtectedRoute requiredRole="seller">
-                                    <SellerLayout />
-                                </ProtectedRoute>
-                            }>
-                                <Route index element={<SellerDashboard />} />
-                                <Route path="announcements" element={<Announcements />} />
-                            </Route>
-
-                            {/* Independent Seller Routes */}
-                            <Route path="/seller/profile" element={
-                                <ProtectedRoute requiredRole="seller">
-                                    <Profile />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/seller/mycars" element={
-                                <ProtectedRoute requiredRole="seller">
-                                    <MyCars />
                                 </ProtectedRoute>
                             } />
 
