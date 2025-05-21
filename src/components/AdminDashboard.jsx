@@ -12,8 +12,6 @@ const AdminDashboard = () => {
         approvedReservations: 0,
         pendingReservations: 0,  // Add this line
         totalRevenue: 0,
-        totalSellingApplications: 0,
-        pendingSellingApplications: 0
     });
 
     useEffect(() => {
@@ -84,14 +82,6 @@ const AdminDashboard = () => {
                     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-700">Today's Bookings</h3>
                         <p className="text-2xl sm:text-3xl font-bold text-purple-600">{stats.todayBookings}</p>
-                    </div>
-                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-700">Total Selling Applications</h3>
-                        <p className="text-2xl sm:text-3xl font-bold text-orange-600">{stats.totalSellingApplications}</p>
-                    </div>
-                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-700">Pending Selling Applications</h3>
-                        <p className="text-2xl sm:text-3xl font-bold text-amber-600">{stats.pendingSellingApplications}</p>
                     </div>
                     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-700">Pending Reservations</h3>

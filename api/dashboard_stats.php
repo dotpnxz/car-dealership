@@ -39,8 +39,6 @@ try {
                 'totalReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars")->fetchColumn(),
                 'approvedReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE status = 'Reserved'")->fetchColumn(),
                 'pendingReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE status = 'pending'")->fetchColumn(),
-                'totalSellingApplications' => (int)$conn->query("SELECT COUNT(*) FROM car_applications")->fetchColumn(),
-                'pendingSellingApplications' => (int)$conn->query("SELECT COUNT(*) FROM car_applications WHERE status = 'pending'")->fetchColumn()
             ];
             break;
 
