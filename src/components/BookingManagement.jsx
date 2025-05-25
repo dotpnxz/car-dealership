@@ -25,6 +25,11 @@ const BookingManagement = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [bookingsPerPage] = useState(10);
 
+    // Determine API base URL based on environment
+    const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';
+
     useEffect(() => {
         fetchBookings();
         if (accountType === 'admin') {
@@ -36,7 +41,7 @@ const BookingManagement = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await fetch('http://localhost/car-dealership/api/get_bookings.php', {
+            const response = await fetch(`${API_BASE_URL}/get_bookings.php`, {
                 credentials: 'include'
             });
 
@@ -64,7 +69,7 @@ const BookingManagement = () => {
 
     const fetchStaffList = async () => {
         try {
-            const response = await fetch('http://localhost/car-dealership/api/get_staff.php', {
+            const response = await fetch(`${API_BASE_URL}/get_staff.php`, {
                 credentials: 'include'
             });
 
@@ -89,7 +94,7 @@ const BookingManagement = () => {
 
         try {
             setLoading(true);
-            const response = await fetch('http://localhost/car-dealership/api/update_booking_status.php', {
+            const response = await fetch(`${API_BASE_URL}/update_booking_status.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -125,7 +130,7 @@ const BookingManagement = () => {
 
         try {
             setLoading(true);
-            const response = await fetch('http://localhost/car-dealership/api/update_booking_status.php', {
+            const response = await fetch(`${API_BASE_URL}/update_booking_status.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -159,7 +164,7 @@ const BookingManagement = () => {
 
     const handleViewDetails = async (bookingId) => {
         try {
-            const response = await fetch(`http://localhost/car-dealership/api/get_booking.php?id=${bookingId}`, {
+            const response = await fetch(`${API_BASE_URL}/get_booking.php?id=${bookingId}`, {
                 credentials: 'include'
             });
 
@@ -180,7 +185,7 @@ const BookingManagement = () => {
         if (accountType !== 'admin') return;
 
         try {
-            const response = await fetch('http://localhost/car-dealership/api/assign_booking.php', {
+            const response = await fetch(`${API_BASE_URL}/assign_booking.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

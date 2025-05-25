@@ -10,13 +10,17 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Dual API base URL logic
+  const API_BASE_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost/car-dealership/api'
+    : 'https://mjautolove.site/api';
+
   const handleLogout = async () => {
     try {
       await logout();
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
-      // Still navigate to login on error to ensure user can log in again
       navigate('/login');
     }
   };
@@ -24,7 +28,7 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
   useEffect(() => {
     const verifySession = async () => {
       try {
-        const response = await fetch('http://localhost/car-dealership/api/login.php', {
+        const response = await fetch(`${API_BASE_URL}/login.php`, {
           credentials: 'include'
         });
 
@@ -42,7 +46,7 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
     if (isLoggedIn) {
       verifySession();
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, API_BASE_URL]);
 
   // Hide sidebar on admin & staff routes
   if (!isLoggedIn || location.pathname === ('/admin')) return null;
@@ -80,7 +84,6 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
       ],
     };
 
-    // Use verifiedAccountType instead of propAccountType
     return [...commonItems, ...(roleSpecificItems[verifiedAccountType] || roleSpecificItems['buyer'])];
   };
 

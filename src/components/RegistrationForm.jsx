@@ -230,7 +230,12 @@ const RegistrationForm = () => {
     }
 
     try {
-      const response = await fetch('http://localhost/car-dealership/api/register.php', {
+      // Determine API base URL based on environment
+      const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';
+
+      const response = await fetch(`${API_BASE_URL}/register.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

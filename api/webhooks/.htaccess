@@ -1,2 +1,24 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Only allow POST requests to webhook endpoints
+    RewriteCond %{REQUEST_METHOD} !^(POST)$
+    RewriteRule .* - [R=405,L]
+    
+    # Route webhook requests
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ test_webhook.php [QSA,L]
+</IfModule>
+
+# Security headers
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "DENY"
+Header set X-XSS-Protection "1; mode=block"
+
+# Enable error logging
 php_flag log_errors on
-php_value error_log webhook_debug.log
+php_value error_log C:\xampp\htdocs\car-dealership\api\webhooks\webhook.log
+
+# Set webhook secret key
+SetEnv PAYMONGO_WEBHOOK_SECRET_KEY whsk_h32Fwe2gT2URe2L4vrRyKGWD

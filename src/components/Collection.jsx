@@ -19,17 +19,24 @@ const Collection = () => {
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState('1'); // Add this for plan selection
+  const [isReserveTypeModalOpen, setIsReserveTypeModalOpen] = useState(false);
+  const [reserveType, setReserveType] = useState(null);
 
   const formatPrice = (price) => {
     const numericPrice = price.replace(/[₱,]/g, '');
     return `₱${parseFloat(numericPrice).toLocaleString()}`;
   };
 
+  // Determine API base URL based on environment
+  const API_BASE_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost/car-dealership/api'
+    : 'https://mjautolove.site/api';
+
   // Fetch cars from the database
   useEffect(() => {
     const fetchCars = async () => {
       try {
-        const response = await fetch('http://localhost/car-dealership/api/get_cars.php', {
+        const response = await fetch(`${API_BASE_URL}/get_cars.php`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -48,7 +55,7 @@ const Collection = () => {
         // Fetch primary images for each car
         const carsWithImages = await Promise.all(data.map(async (car) => {
           try {
-            const imageResponse = await fetch(`http://localhost/car-dealership/api/get_car_images.php?car_id=${car.id}`, {
+            const imageResponse = await fetch(`${API_BASE_URL}/get_car_images.php?car_id=${car.id}`, {
               method: 'GET',
               credentials: 'include',
               headers: {
@@ -93,7 +100,7 @@ const Collection = () => {
     const fetchCarImages = async () => {
       if (selectedCar && !selectedCar.images) {  // Only fetch if we don't have images yet
         try {
-          const response = await fetch(`http://localhost/car-dealership/api/get_car_images.php?car_id=${selectedCar.id}`, {
+          const response = await fetch(`${API_BASE_URL}/get_car_images.php?car_id=${selectedCar.id}`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -246,6 +253,25 @@ const Collection = () => {
       </div>
     );
   }
+
+  // Reservation modal handlers (must be defined before return)
+  const handleReserveClick = (e) => {
+    e.preventDefault();
+    setIsReserveTypeModalOpen(true);
+  };
+
+  const handleReserveTypeSelect = (type) => {
+    setReserveType(type);
+    setIsReserveTypeModalOpen(false);
+    // Defensive: only redirect if selectedCar exists
+    if (selectedCar && selectedCar.id) {
+      window.location.href = `/reservenow?type=${type}&carId=${selectedCar.id}`;
+    }
+  };
+
+  const handleCloseReserveTypeModal = () => {
+    setIsReserveTypeModalOpen(false);
+  };
 
   return (
     <div id="collection" className="w-full min-h-screen bg-cover bg-center flex flex-col items-center justify-center p-2 sm:p-0" style={{ backgroundImage: `url(${honeycomb})` }}>
@@ -490,31 +516,18 @@ const Collection = () => {
                       >
                         Close
                       </button>
-                      <Link 
-                        to={selectedCar?.status !== 'reserved' ? "/reservenow" : "#"} 
-                        state={{ carId: selectedCar?.id }}
-                        className={`${
+                      <button
+                        type="button"
+                        className={`bg-red-500 text-white px-4 py-2 rounded-lg transition ${
                           selectedCar?.status === 'reserved' 
                             ? 'opacity-50 cursor-not-allowed' 
-                            : 'hover:opacity-90'
+                            : 'hover:bg-red-600'
                         }`}
-                        onClick={(e) => {
-                          if (selectedCar?.status === 'reserved') {
-                            e.preventDefault();
-                          }
-                        }}
+                        disabled={selectedCar?.status === 'reserved'}
+                        onClick={selectedCar?.status === 'reserved' ? undefined : handleReserveClick}
                       >
-                        <button 
-                          className={`bg-red-500 text-white px-4 py-2 rounded-lg transition ${
-                            selectedCar?.status === 'reserved' 
-                              ? 'opacity-50 cursor-not-allowed' 
-                              : 'hover:bg-red-600'
-                          }`}
-                          disabled={selectedCar?.status === 'reserved'}
-                        >
-                          {selectedCar?.status === 'reserved' ? 'Reserved' : 'Reserve Now'}
-                        </button>
-                      </Link>
+                        {selectedCar?.status === 'reserved' ? 'Reserved' : 'Reserve Now'}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -540,6 +553,51 @@ const Collection = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Reserve Type Modal */}
+          {isReserveTypeModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70]">
+              <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+                <h3 className="text-xl font-bold mb-4 text-center">Choose Reservation Type</h3>
+                <div className="flex flex-col gap-4">
+                  <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                    onClick={() => handleReserveTypeSelect('full')}
+                  >
+                    Reservation Now, Full Price Later
+                  </button>
+                  <Link
+                    to={selectedCar?.status !== 'reserved' ? "/reservenow" : "#"}
+                    state={{ carId: selectedCar?.id, type: 'loan' }}
+                    className={`${
+                      selectedCar?.status === 'reserved'
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:opacity-90'
+                    }`}
+                    onClick={e => {
+                      if (selectedCar?.status === 'reserved') {
+                        e.preventDefault();
+                      }
+                    }}
+                  >
+                    <button
+                      className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition w-full"
+                      disabled={selectedCar?.status === 'reserved'}
+                      type="button"
+                    >
+                      Reservation for Car Loan
+                    </button>
+                  </Link>
+                  <button
+                    className="mt-2 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition"
+                    onClick={handleCloseReserveTypeModal}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           )}

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 import usePhLocations from '../hooks/usePhLocations';
+import { toast } from 'react-toastify';
 
 const UserManagement = () => {
     const { isLoggedIn, accountType } = useContext(AuthContext);
@@ -40,6 +41,11 @@ const UserManagement = () => {
     const [availableProvinces, setAvailableProvinces] = useState([]);
     const [availableCities, setAvailableCities] = useState([]);
 
+    // Dynamic API base URL for dev/prod
+    const API_BASE_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost/car-dealership/api'
+      : 'https://mjautolove.site/api';
+
     // Reset location state when modals are closed
     const resetLocationState = () => {
         setSelectedRegion('');
@@ -73,7 +79,7 @@ const UserManagement = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await fetch('http://localhost/car-dealership/api/get_users.php', {
+            const response = await fetch(`${API_BASE_URL}/get_users.php`, {
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
@@ -106,7 +112,7 @@ const UserManagement = () => {
     const handleAddUser = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost/car-dealership/api/add_user.php', {
+            const response = await fetch(`${API_BASE_URL}/add_user.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -150,11 +156,12 @@ const UserManagement = () => {
                 accountType: 'buyer',
                 suffix: ''
             });
-            fetchUsers();
-            alert(`User added successfully! Generated password: ${data.password}`);
+            // Replace alert(`User added successfully! Generated password: ${data.password}`);
+            toast.success(`User added successfully! Generated password: ${data.password}`);
         } catch (error) {
             console.error('Error adding user:', error);
-            alert(error.message || 'Failed to add user');
+            // Replace alert(error.message || 'Failed to add user');
+            toast.error(error.message || 'Failed to add user');
         }
     };
 
@@ -169,7 +176,7 @@ const UserManagement = () => {
                 ...formData
             };
 
-            const response = await fetch('http://localhost/car-dealership/api/update_user.php', {
+            const response = await fetch(`${API_BASE_URL}/update_user.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -200,7 +207,7 @@ const UserManagement = () => {
         }
 
         try {
-            const response = await fetch('http://localhost/car-dealership/api/delete_user.php', {
+            const response = await fetch(`${API_BASE_URL}/delete_user.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -221,11 +228,13 @@ const UserManagement = () => {
                 throw new Error(data.error || `Failed to delete user (${response.status})`);
             }
 
-            alert('User deleted successfully');
+            // Replace alert('User deleted successfully');
+            toast.success('User deleted successfully');
             await fetchUsers();
         } catch (error) {
             console.error('Delete error:', error);
-            alert(error.message || 'Failed to delete user');
+            // Replace alert(error.message || 'Failed to delete user');
+            toast.error(error.message || 'Failed to delete user');
         }
     };
 

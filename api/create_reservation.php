@@ -1,6 +1,15 @@
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: http://localhost:5173');
+
+// Allow CORS for both local and live domains
+$allowed_origins = [
+    'http://localhost:5173',
+    'https://mjautolove.site'
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Credentials: true');
@@ -14,6 +23,7 @@ require 'db_connect.php';
 try {
     // Get POST data
     $data = json_decode(file_get_contents('php://input'), true);
+    error_log("Received data: " . print_r($data, true));
     
     if (!isset($data['car_id']) || !isset($data['user_id']) || !isset($data['title'])) {
         throw new Exception('Missing required fields');
@@ -25,40 +35,8 @@ try {
 
     $conn = db_connect();
     
-    // Check if we're using the correct database
-    $dbName = $conn->query("SELECT DATABASE()")->fetchColumn();
-    error_log("Using database: " . $dbName);
-    
-    // Check if the table exists
-    $tableCheck = $conn->prepare("
-        SELECT COUNT(*) as count 
-        FROM information_schema.tables 
-        WHERE table_schema = ? 
-        AND table_name = 'reserved_cars'
-    ");
-    $tableCheck->execute([$dbName]);
-    $tableExists = $tableCheck->fetch(PDO::FETCH_ASSOC)['count'] > 0;
-    
-    if (!$tableExists) {
-        // Create the table if it doesn't exist
-        $conn->exec("
-            CREATE TABLE IF NOT EXISTS reserved_cars (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                car_id INT NOT NULL,
-                user_id INT NOT NULL,
-                title VARCHAR(255) NOT NULL,
-                fullname VARCHAR(255),
-                contactNo VARCHAR(50),
-                address TEXT,
-                status VARCHAR(50) DEFAULT 'pending',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ");
-        error_log("Created reserved_cars table");
-    }
-
-    // Check if the car is already reserved
-    $checkStmt = $conn->prepare("SELECT COUNT(*) FROM reserved_cars WHERE car_id = ? AND status = 'Reserved'");
+    // Check if the car is already reserved (has a paid reservation)
+    $checkStmt = $conn->prepare("SELECT COUNT(*) FROM reserved_cars WHERE car_id = ? AND payment_status = 'paid'");
     $checkStmt->execute([$carId]);
     $reservationCount = $checkStmt->fetchColumn();
 
@@ -71,8 +49,8 @@ try {
         exit;
     }
 
-    // Check if user already has a pending/confirmed reservation for THIS specific car
-    $userCheckStmt = $conn->prepare("SELECT COUNT(*) FROM reserved_cars WHERE car_id = ? AND user_id = ? AND (status = 'pending' OR status = 'Reserved')");
+    // Check if user already has a pending/paid reservation for THIS specific car
+    $userCheckStmt = $conn->prepare("SELECT COUNT(*) FROM reserved_cars WHERE car_id = ? AND user_id = ? AND payment_status IN ('pending', 'paid')");
     $userCheckStmt->execute([$carId, $userId]);
     $userReservationCount = $userCheckStmt->fetchColumn();
 
@@ -85,7 +63,7 @@ try {
         exit;
     }
 
-    // Get user details with concatenated name and address
+    // Get user details
     $stmt = $conn->prepare("
         SELECT 
             TRIM(CONCAT_WS(' ',
@@ -119,7 +97,7 @@ try {
             fullname, 
             contactNo, 
             address, 
-            status
+            payment_status
         ) VALUES (?, ?, ?, ?, ?, ?, 'pending')
     ");
 
@@ -132,17 +110,13 @@ try {
         $user['address']
     ]);
 
-    // Don't update car status until admin approves
-    // Remove or comment out the following lines:
-    // $updateStmt = $conn->prepare("UPDATE cars SET status = 'reserved' WHERE id = ?");
-    // $updateStmt->execute([$carId]);
+    $reservationId = $conn->lastInsertId();
 
     echo json_encode([
         'success' => true,
         'message' => 'Reservation created successfully',
+        'reservation_id' => $reservationId,
         'debug' => [
-            'database' => $dbName,
-            'table_exists' => $tableExists ? 'Yes' : 'No',
             'user_id' => $userId,
             'car_id' => $carId
         ]

@@ -2,9 +2,18 @@
 ob_start();
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: http://localhost:5173');
+
+// Allow CORS for both local and live domains
+$allowed_origins = [
+    'http://localhost:5173',
+    'https://mjautolove.site'
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
 header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 session_start();
@@ -33,26 +42,26 @@ try {
     $accountType = $_SESSION['accountType'];
     error_log("Account type from session (payments): " . $accountType);
 
-    $conn = db_connect();
-
-    $sql = "
+    $conn = db_connect();    $sql = "
         SELECT
             rc.id,
             c.title AS car_title,
-            rc.payment_amount AS amount,
-            rc.updated_at AS created_at,
-            rc.payment_status AS status,
+            COALESCE(rc.payment_amount, 0) AS amount,
+            COALESCE(rc.updated_at, rc.reservation_date) AS created_at,
+            COALESCE(rc.payment_status, 'pending') AS status,
+            COALESCE(rc.payment_reference, '') as payment_reference,
             u.surname,
             u.firstName,
-            u.middleName,
-            u.suffix,
+            COALESCE(u.middleName, '') as middleName,
+            COALESCE(u.suffix, '') as suffix,
             u.username AS user_name,
-            u.id AS user_id
+            u.id AS user_id,
+            rc.fullname
         FROM reserved_cars rc
-        JOIN cars c ON rc.car_id = c.id
-        JOIN users u ON rc.user_id = u.id
-        WHERE rc.payment_status IN ('paid', 'refund_requested', 'refunded')
-        ORDER BY rc.updated_at DESC
+        LEFT JOIN cars c ON rc.car_id = c.id
+        LEFT JOIN users u ON rc.user_id = u.id
+        WHERE rc.payment_status IS NOT NULL
+        ORDER BY rc.updated_at DESC, rc.reservation_date DESC
     ";
 
     $stmt = $conn->prepare($sql);

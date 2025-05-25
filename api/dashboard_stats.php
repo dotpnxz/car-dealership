@@ -3,13 +3,23 @@ error_reporting(0);
 ini_set('display_errors', 0);
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: http://localhost:5173');
+
+// Allow CORS for both local and live domains
+$allowed_origins = [
+    'http://localhost:5173',
+    'https://mjautolove.site'
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
 header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
+    http_response_code(200);
+    exit();
 }
 
 session_start();
@@ -37,8 +47,8 @@ try {
                 'pendingBookings' => (int)$conn->query("SELECT COUNT(*) FROM bookings WHERE status = 'Pending'")->fetchColumn(),
                 'todayBookings' => (int)$conn->query("SELECT COUNT(*) FROM bookings WHERE DATE(booking_date) = CURDATE()")->fetchColumn(),
                 'totalReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars")->fetchColumn(),
-                'approvedReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE status = 'Reserved'")->fetchColumn(),
-                'pendingReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE status = 'pending'")->fetchColumn(),
+                'approvedReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE payment_status = 'paid'")->fetchColumn(),
+                'pendingReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE payment_status = 'pending'")->fetchColumn(),
             ];
             break;
 
@@ -50,10 +60,8 @@ try {
                 'assignedBookings' => (int)$conn->query("SELECT COUNT(*) FROM bookings WHERE assigned_to = '$userId' AND status = 'confirmed'")->fetchColumn(),
                 'todayBookings' => (int)$conn->query("SELECT COUNT(*) FROM bookings WHERE DATE(booking_date) = CURDATE() AND status = 'confirmed'")->fetchColumn(),
                 'totalReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars")->fetchColumn(),
-                'approvedReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE status = 'Reserved'")->fetchColumn(),
-                'pendingReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE status = 'pending'")->fetchColumn(),
-                'totalSellingApplications' => (int)$conn->query("SELECT COUNT(*) FROM car_applications")->fetchColumn(),
-                'pendingSellingApplications' => (int)$conn->query("SELECT COUNT(*) FROM car_applications WHERE status = 'pending'")->fetchColumn()
+                'approvedReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE payment_status = 'paid'")->fetchColumn(),
+                'pendingReservations' => (int)$conn->query("SELECT COUNT(*) FROM reserved_cars WHERE payment_status = 'pending'")->fetchColumn(),
             ];
             break;
         case 'buyer':
@@ -63,7 +71,7 @@ try {
                     (SELECT COUNT(*) FROM bookings WHERE user_id = ?) as totalBookings,
                     (SELECT COUNT(*) FROM bookings WHERE user_id = ? AND status = 'pending') as pendingBookings,
                     (SELECT COUNT(*) FROM reserved_cars WHERE user_id = ?) as totalReservations,
-                    (SELECT COUNT(*) FROM reserved_cars WHERE user_id = ? AND status = 'Reserved') as approvedReservations,
+                    (SELECT COUNT(*) FROM reserved_cars WHERE user_id = ? AND payment_status = 'paid') as approvedReservations,
                     (SELECT COUNT(*) FROM bookings WHERE user_id = ? AND DATE(booking_date) = CURDATE() AND status = 'Confirmed') as todayBookings
             ");
             $stmt->execute([$userId, $userId, $userId, $userId, $userId]);

@@ -6,18 +6,23 @@ const PaymentModal = ({ isOpen, onClose, reservation }) => {
     const [qrCode, setQrCode] = useState(null);
     const [paymentLink, setPaymentLink] = useState(null);
 
+    // Determine API base URL based on environment
+    const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';    const RESERVATION_FEE = 10000; // Fixed reservation fee of 10,000 PHP
+
     const generateQR = async () => {
         setLoading(true);
         setError('');
         try {
-            const response = await fetch('http://localhost/car-dealership/api/generate_qr.php', {
+            const response = await fetch(`${API_BASE_URL}/generate_qr.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    amount: reservation.amount,
+                    amount: RESERVATION_FEE,
                     reservation_id: reservation.id
                 }),
             });
@@ -41,23 +46,34 @@ const PaymentModal = ({ isOpen, onClose, reservation }) => {
         setLoading(true);
         setError('');
         try {
-            const response = await fetch('http://localhost/car-dealership/api/generate_payment_link.php', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
+            const response = await fetch(`${API_BASE_URL}/generate_payment_link.php`, {
+                method: 'POST',                headers: {
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    amount: reservation.amount,
-                    reservation_id: reservation.id
-                }),
+                    payment_reference: reservation.id,
+                    amount: RESERVATION_FEE
+                })
             });
 
-            const data = await response.json();
-            
+            // Check if response is ok before parsing JSON
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const text = await response.text(); // Get response as text first
+            console.log('Raw response:', text); // Debug log
+
+            let data;
+            try {
+                data = JSON.parse(text); // Parse the text as JSON
+            } catch (e) {
+                console.error('JSON parse error:', e);
+                throw new Error('Invalid JSON response from server');
+            }
+
             if (data.success && data.data) {
                 setPaymentLink(data.data);
-                // Automatically open payment URL in new tab
                 window.open(data.data.payment_url, '_blank');
             } else {
                 throw new Error(data.message || 'Failed to generate payment link');
@@ -75,10 +91,15 @@ const PaymentModal = ({ isOpen, onClose, reservation }) => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                <h2 className="text-xl font-bold mb-4">Payment for Reservation</h2>
-                <div className="mb-4">
-                    <p className="text-gray-600">Amount to Pay:</p>
-                    <p className="text-2xl font-bold">₱{reservation.amount?.toLocaleString()}</p>
+                <h2 className="text-xl font-bold mb-4">Payment for Reservation</h2>                <div className="space-y-4 mb-6">
+                    <div>
+                        <p className="text-gray-600">Reservation Fee:</p>
+                        <p className="text-2xl font-bold">₱{RESERVATION_FEE.toLocaleString()}</p>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                        <p>This is a fixed reservation fee to secure your vehicle.</p>
+                        <p>This will be deducted from downpayment once you proceed with the purchase.</p>
+                    </div>
                 </div>
 
                 {!qrCode && !paymentLink && !loading && (

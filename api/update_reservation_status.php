@@ -4,13 +4,23 @@ ob_start();
 
 // Set headers
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: http://localhost:5173');
+
+// Allow CORS for both local and live domains
+$allowed_origins = [
+    'http://localhost:5173',
+    'https://mjautolove.site'
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
+    http_response_code(200);
+    exit();
 }
 
 // Start session
@@ -32,11 +42,11 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Check if user is admin
-if ($accountTypeFromSession !== 'admin') {
-    error_log("Update Status - User is not admin. Account Type: " . $accountTypeFromSession);
+// Check if user is admin or staff
+if ($accountTypeFromSession !== 'admin' && $accountTypeFromSession !== 'staff') {
+    error_log("Update Status - User is not admin or staff. Account Type: " . $accountTypeFromSession);
     http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Only admin users can update reservation status']);
+    echo json_encode(['success' => false, 'error' => 'Only admin or staff users can update reservation status']);
     exit;
 }
 
@@ -52,15 +62,15 @@ try {
         throw new Exception('Invalid JSON data: ' . json_last_error_msg());
     }
 
-    if (!isset($data['reservation_id']) || !isset($data['status'])) {
-        throw new Exception('Missing required fields');
+    if (!isset($data['reservation_id']) || !isset($data['payment_status'])) {
+        echo json_encode(['success' => false, 'error' => 'Missing required fields']);
+        exit();
     }
-
     $reservationId = $data['reservation_id'];
-    $newStatus = $data['status'];
+    $newPaymentStatus = $data['payment_status'];
 
     error_log("Update Status - Reservation ID received: " . $reservationId);
-    error_log("Update Status - New Status received: " . $newStatus);
+    error_log("Update Status - New Status received: " . $newPaymentStatus);
 
     $conn = db_connect();
 
@@ -72,8 +82,8 @@ try {
     }
 
     // Update the status
-    $stmtUpdate = $conn->prepare("UPDATE reserved_cars SET status = :new_status WHERE id = :reservation_id");
-    $stmtUpdate->bindParam(':new_status', $newStatus, PDO::PARAM_STR);
+    $stmtUpdate = $conn->prepare("UPDATE reserved_cars SET payment_status = :new_payment_status WHERE id = :reservation_id");
+    $stmtUpdate->bindParam(':new_payment_status', $newPaymentStatus, PDO::PARAM_STR);
     $stmtUpdate->bindParam(':reservation_id', $reservationId, PDO::PARAM_INT);
     $updateSuccess = $stmtUpdate->execute();
 
@@ -89,7 +99,7 @@ try {
                 'user_id' => $_SESSION['user_id'],
                 'account_type' => $_SESSION['accountType'],
                 'updated_reservation_id' => $reservationId,
-                'new_status' => $newStatus
+                'new_status' => $newPaymentStatus
             ]
         ];
         error_log("Update Status - Success Response: " . json_encode($response));

@@ -20,10 +20,15 @@ const BookVisit = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // Determine API base URL based on environment
+  const API_BASE_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost/car-dealership/api'
+    : 'https://mjautolove.site/api';
+
   useEffect(() => {
     const checkAuthAndFetchCars = async () => {
       try {
-        const authCheck = await fetch('http://localhost/car-dealership/api/check_session.php', {
+        const authCheck = await fetch(`${API_BASE_URL}/check_session.php`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -40,7 +45,7 @@ const BookVisit = () => {
         }
 
         // Only fetch cars if authenticated
-        const response = await fetch('http://localhost/car-dealership/api/get_cars.php', {
+        const response = await fetch(`${API_BASE_URL}/get_cars.php`, {
           credentials: 'include'
         });
 
@@ -112,13 +117,13 @@ const BookVisit = () => {
     setError('');
 
     try {
-      const authCheck = await fetch('http://localhost/car-dealership/api/check_session.php', {
+      const authCheck = await fetch(`${API_BASE_URL}/check_session.php`, {
         credentials: 'include'
       });
       const authData = await authCheck.json();
 
       if (authData.status !== 'authenticated') {
-        throw new Error('Please log in to book a visit');
+        throw new Error('Please log in to schedule a test drive');
       }
 
       const selectedCar = availableCars.find(car => car.id.toString() === formData.car_id);
@@ -141,7 +146,7 @@ const BookVisit = () => {
 
       console.log('Sending booking data:', bookingData); // Debug log
 
-      const response = await fetch('http://localhost/car-dealership/api/create_booking.php', {
+      const response = await fetch(`${API_BASE_URL}/create_booking.php`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -153,7 +158,7 @@ const BookVisit = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create booking');
+        throw new Error(data.error || 'Failed to schedule test drive');
       }
 
       setFormData({
@@ -163,7 +168,7 @@ const BookVisit = () => {
         booking_time: '',
         notes: ''
       });
-      setSuccessMessage('Booking created successfully! We will contact you shortly to confirm your appointment.');
+      setSuccessMessage('Test drive scheduled successfully! We will contact you shortly to confirm your appointment.');
       setShowSuccess(true);
 
     } catch (err) {
@@ -197,9 +202,9 @@ const BookVisit = () => {
         <div className="w-full sm:w-[90%] max-w-[90rem] bg-white rounded-lg shadow-lg p-4 sm:p-8 my-6 sm:my-12">
           {!isLoggedIn ? (
             <div className="text-center space-y-4 sm:space-y-6">
-              <h2 className="text-2xl sm:text-4xl font-bold text-gray-800">Please Log In to Book a Visit</h2>
+              <h2 className="text-2xl sm:text-4xl font-bold text-gray-800">Please Log In to Schedule a Test Drive</h2>
               <p className="text-base sm:text-lg text-gray-600">
-                You need to be logged in to schedule a viewing. Please log in or create an account to continue.
+                You need to be logged in to schedule a test drive. Please log in or create an account to continue.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4 sm:space-x-4">
                 <button
@@ -219,24 +224,24 @@ const BookVisit = () => {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
               <div className="space-y-4 sm:space-y-6">
-                <h2 className="text-2xl sm:text-4xl font-bold text-gray-800">Schedule a Viewing with Us!</h2>
+                <h2 className="text-2xl sm:text-4xl font-bold text-gray-800">Schedule a Test Drive with Us!</h2>
                 <p className="text-base sm:text-lg text-gray-600">
-                  Interested in seeing a car in person? Fill out the form below to book your preferred time, and we'll get back to you with confirmation as soon as possible!
+                  Interested in experiencing a car firsthand? Fill out the form below to schedule your preferred test drive time, and we'll get back to you with confirmation as soon as possible!
                 </p>
                 <div className="space-y-4">
-                  <h3 className="text-xl sm:text-2xl font-semibold text-gray-700">A simple 3-step guide on what happens after booking:</h3>
+                  <h3 className="text-xl sm:text-2xl font-semibold text-gray-700">A simple 3-step guide on what happens after scheduling:</h3>
                   <ul className="space-y-3 sm:space-y-4 text-base sm:text-lg">
                     <li className="flex items-start space-x-3">
                       <span className="font-bold">Step 1:</span>
-                      <span>Fill out the form with your details and preferred time</span>
+                      <span>Fill out the form with your details and preferred time for your test drive</span>
                     </li>
                     <li className="flex items-start space-x-3">
                       <span className="font-bold">Step 2:</span>
-                      <span>Our team will confirm your schedule.</span>
+                      <span>Our team will confirm your test drive schedule.</span>
                     </li>
                     <li className="flex items-start space-x-3">
                       <span className="font-bold">Step 3:</span>
-                      <span>Visit the location and experience the car firsthand!</span>
+                      <span>Visit the location and enjoy your test drive!</span>
                     </li>
                   </ul>
                 </div>

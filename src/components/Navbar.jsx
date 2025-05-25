@@ -96,18 +96,7 @@ const Navbar = () => {
                                 Collection
                             </NavLink>
                         </li>
-                        {/* Only show Sell link if user is not a buyer */}
-                        {(!isLoggedIn || accountType !== 'buyer') && (
-                            <li>
-                                <NavLink
-                                    to="/sell"
-                                    className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
-                                    onClick={() => scrollToSection('sell')}
-                                >
-                                    Sell
-                                </NavLink>
-                            </li>
-                        )}
+                        {/* Removed Sell link */}
                         <li>
                             <NavLink
                                 to="/about"
@@ -122,7 +111,7 @@ const Navbar = () => {
                                 to="/book-visit"
                                 className={({ isActive }) => `hover:text-yellow-500 transition-colors ${isActive ? 'text-yellow-500' : ''}`}
                             >
-                                Book A Visit
+                                Test Drive
                             </NavLink>
                         </li>
                         <li>
@@ -198,12 +187,7 @@ const Navbar = () => {
                         <ul className="flex flex-col items-center space-y-4 pt-8">
                             <li><NavLink to="/" className="text-xl" onClick={() => { setIsMenuOpen(false); scrollToSection('home'); }}>Home</NavLink></li>
                             <li><NavLink to="/collection" className="text-xl" onClick={() => { setIsMenuOpen(false); scrollToSection('collection'); }}>Collection</NavLink></li>
-                            
-                            {/* Only show Sell link if user is not a buyer */}
-                            {(!isLoggedIn || accountType !== 'buyer') && (
-                                <li><NavLink to="/sell" className="text-xl" onClick={() => { setIsMenuOpen(false); scrollToSection('sell'); }}>Sell</NavLink></li>
-                            )}
-                            
+                            {/* Removed Sell link */}
                             <li><NavLink to="/about" className="text-xl" onClick={() => { setIsMenuOpen(false); scrollToSection('about'); }}>About Us</NavLink></li>
                             <li><NavLink to="/book-visit" className="text-xl" onClick={() => setIsMenuOpen(false)}>Book A Visit</NavLink></li>
                             <li><NavLink to="/location" className="text-xl" onClick={() => { setIsMenuOpen(false); scrollToSection('location'); }}>Location</NavLink></li>

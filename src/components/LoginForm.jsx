@@ -10,6 +10,11 @@ const LoginForm = () => {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
+    // Determine API base URL based on environment
+    const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';
+
     const handleUsernameChange = (event) => {
         setUsername(event.target.value);
     };
@@ -26,7 +31,7 @@ const LoginForm = () => {
         try {
             console.log('Attempting login with:', { username });
             
-            const response = await fetch('http://localhost/car-dealership/api/login.php', {
+            const response = await fetch(`${API_BASE_URL}/login.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

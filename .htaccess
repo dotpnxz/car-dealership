@@ -1,0 +1,17 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /car-dealership/
+    
+    # Handle API requests first
+    RewriteCond %{REQUEST_URI} ^/car-dealership/api/
+    RewriteRule ^ - [L]
+    
+    # Serve static files if they exist
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-l
+    RewriteRule . /car-dealership/index.html [L]
+</IfModule>
+
+# Handle errors
+ErrorDocument 404 /car-dealership/index.html

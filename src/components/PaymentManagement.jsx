@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const PaymentManagement = () => {
+  // Dynamic API base URL for dev/prod
+  const API_BASE_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost/car-dealership/api'
+    : 'https://mjautolove.site/api';
+
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +21,7 @@ const PaymentManagement = () => {
   const fetchPayments = async () => {
     try {
       setError(null);
-      const response = await fetch('http://localhost/car-dealership/api/get_all_payments.php', {
+      const response = await fetch(`${API_BASE_URL}/get_all_payments.php`, {
         credentials: 'include'
       });
       
@@ -42,7 +48,7 @@ const PaymentManagement = () => {
   const handleApproveRefund = async (paymentId) => {
     if (!confirm('Are you sure you want to approve this refund?')) return;
     try {
-      const response = await fetch('http://localhost/car-dealership/api/approve_refund.php', {
+      const response = await fetch(`${API_BASE_URL}/approve_refund.php`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -53,14 +59,14 @@ const PaymentManagement = () => {
       fetchPayments(); // Refresh the list
     } catch (error) {
       console.error('Error approving refund:', error);
-      alert('Failed to approve refund');
+      toast.error('Failed to approve refund');
     }
   };
 
   const handleDenyRefund = async (paymentId) => {
     if (!confirm('Are you sure you want to deny this refund?')) return;
     try {
-      const response = await fetch('http://localhost/car-dealership/api/deny_refund.php', {
+      const response = await fetch(`${API_BASE_URL}/deny_refund.php`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -71,7 +77,7 @@ const PaymentManagement = () => {
       fetchPayments(); // Refresh the list
     } catch (error) {
       console.error('Error denying refund:', error);
-      alert('Failed to deny refund');
+      toast.error('Failed to deny refund');
     }
   };
 
@@ -112,30 +118,31 @@ const PaymentManagement = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {payments.map((payment, index) => (
-              <tr key={index}>
-                <td className="px-6 py-4 whitespace-nowrap">
+              <tr key={index}>                <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-sm text-gray-900">
-                    {`${payment.surname}, ${payment.firstName} ${payment.middleName || ''} ${payment.suffix || ''}`}
+                    {payment.fullname || `${payment.surname || ''}, ${payment.firstName || ''} ${payment.middleName || ''} ${payment.suffix || ''}`}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">{payment.car_title}</span>
+                  <span className="text-sm text-gray-900">{payment.car_title || 'N/A'}</span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">₱{payment.amount.toLocaleString()}</span>
+                  <span className="text-sm text-gray-900">
+                    {payment.amount ? `₱${Number(payment.amount).toLocaleString()}` : 'N/A'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-sm text-gray-900">
                     {new Date(payment.created_at).toLocaleString()}
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                </td>                <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                     ${payment.status === 'paid' ? 'bg-green-100 text-green-800' : 
                       payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
                       payment.status === 'refunded' ? 'bg-blue-100 text-blue-800' :
-                      'bg-red-100 text-red-800'}`}>
-                    {payment.status}
+                      payment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'}`}>
+                    {payment.status ? payment.status.charAt(0).toUpperCase() + payment.status.slice(1) : 'Unknown'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

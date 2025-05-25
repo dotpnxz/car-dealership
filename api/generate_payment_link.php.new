@@ -1,0 +1,125 @@
+<?php
+// Disable error display and enable error logging
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/payment_errors.log');
+
+header('Content-Type: application/json');
+
+// Allow CORS for both local and live domains
+$allowed_origins = [
+    'http://localhost:5173',
+    'https://mjautolove.site'
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once(__DIR__ . '/../config/config.php');
+require_once(__DIR__ . '/../api/db_connect.php');
+
+try {
+    // Get database connection
+    $conn = db_connect();
+    
+    // Verify database connection
+    if (!$conn) {
+        throw new Exception("Database connection failed");
+    }
+
+    // Log incoming request
+    error_log("Received request: " . file_get_contents('php://input'));
+    
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (!isset($data['payment_reference']) || !isset($data['amount'])) {
+        throw new Exception('Missing required fields');
+    }
+    
+    $reservationId = $data['payment_reference'];
+    $amount = $data['amount'] ?? 0;
+
+    if ($amount <= 0) {
+        throw new Exception('Invalid amount');
+    }
+
+    // Generate a unique payment reference
+    $paymentReference = 'RES' . $reservationId . '_' . time();
+
+    // Create PayMongo request with proper reference
+    $requestData = [
+        'data' => [
+            'attributes' => [
+                'amount' => (int)($amount * 100),
+                'description' => "Car Reservation Fee",
+                'metadata' => [
+                    'reservation_id' => $reservationId,
+                    'payment_reference' => $paymentReference
+                ],
+                'external_reference_number' => $paymentReference
+            ]
+        ]
+    ];
+
+    // Update the reservation with the payment reference
+    $sql = "UPDATE reserved_cars 
+            SET payment_reference = :ref,
+                payment_status = 'pending',
+                updated_at = CURRENT_TIMESTAMP 
+            WHERE id = :res_id";
+    
+    $stmt = $conn->prepare($sql);
+    $stmt->bindValue(':ref', $paymentReference, PDO::PARAM_STR);
+    $stmt->bindValue(':res_id', $reservationId, PDO::PARAM_INT);
+    
+    if (!$stmt->execute()) {
+        throw new Exception("Failed to update reservation: " . implode(", ", $stmt->errorInfo()));
+    }
+
+    // Create PayMongo payment link
+    $client = new \GuzzleHttp\Client();
+    $response = $client->post('https://api.paymongo.com/v1/links', [
+        'headers' => [
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Basic ' . base64_encode($secretKey . ':')
+        ],
+        'json' => $requestData
+    ]);
+
+    $result = json_decode($response->getBody()->getContents(), true);
+
+    // Log the PayMongo response
+    error_log("PayMongo Response: " . json_encode($result));
+
+    echo json_encode([
+        'success' => true,
+        'data' => [
+            'payment_url' => $result['data']['attributes']['checkout_url'],
+            'reference' => $result['data']['id'],
+            'payment_reference' => $paymentReference
+        ]
+    ]);
+    exit;
+
+} catch (Exception $e) {
+    error_log("Payment Link Error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
+    exit;
+}
+?>

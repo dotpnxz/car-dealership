@@ -16,9 +16,12 @@ const Announcements = () => {
 
     // Add authentication verification
     useEffect(() => {
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost/car-dealership/api'
+            : 'https://mjautolove.site/api';
         const verifyAuth = async () => {
             try {
-                const response = await fetch('http://localhost/car-dealership/api/verify_auth.php', {
+                const response = await fetch(`${API_BASE_URL}/verify_auth.php`, {
                     credentials: 'include'
                 });
                 const data = await response.json();
@@ -37,9 +40,13 @@ const Announcements = () => {
         fetchAnnouncements();
     }, []);
 
+    const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';
+
     const fetchAnnouncements = async () => {
         try {
-            const response = await fetch('http://localhost/car-dealership/api/get_announcements.php', {
+            const response = await fetch(`${API_BASE_URL}/get_announcements.php`, {
                 credentials: 'include'
             });
             const data = await response.json();
@@ -66,7 +73,7 @@ const Announcements = () => {
                 formData.append(`images[]`, image);
             });
 
-            const response = await fetch('http://localhost/car-dealership/api/create_announcement.php', {
+            const response = await fetch(`${API_BASE_URL}/create_announcement.php`, {
                 method: 'POST',
                 credentials: 'include',
                 body: formData
@@ -75,7 +82,7 @@ const Announcements = () => {
             const data = await response.json();
             if (data.success) {
                 // Create notifications after successful announcement
-                await fetch('http://localhost/car-dealership/api/create_notifications.php', {
+                await fetch(`${API_BASE_URL}/create_notifications.php`, {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -98,7 +105,7 @@ const Announcements = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this announcement?')) {
             try {
-                const response = await fetch(`http://localhost/car-dealership/api/delete_announcement.php?id=${id}`, {
+                const response = await fetch(`${API_BASE_URL}/delete_announcement.php?id=${id}`, {
                     method: 'DELETE',
                     credentials: 'include'
                 });
@@ -119,7 +126,7 @@ const Announcements = () => {
 
     const handleUpdate = async (id) => {
         try {
-            const response = await fetch('http://localhost/car-dealership/api/update_announcement.php', {
+            const response = await fetch(`${API_BASE_URL}/update_announcement.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -250,7 +257,7 @@ const Announcements = () => {
                                 {announcement.images.map((image, index) => (
                                     <img
                                         key={index}
-                                        src={`http://localhost/car-dealership/${image}`}
+                                        src={`${API_BASE_URL.replace('/api','')}/${image}`}
                                         alt={`Announcement image ${index + 1}`}
                                         className="w-full h-40 sm:h-48 object-cover rounded"
                                     />

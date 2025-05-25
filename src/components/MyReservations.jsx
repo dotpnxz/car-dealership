@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PaymentModal from './PaymentModal';
+import PaymentModal from './Paymentmodal';
 
 const MyReservations = () => {
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [showPayment, setShowPayment] = useState(false);
     const [selectedReservation, setSelectedReservation] = useState(null);
     const navigate = useNavigate();
+
+    // Determine API base URL based on environment
+    const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';
 
     useEffect(() => {
         fetchReservations();
@@ -17,36 +22,26 @@ const MyReservations = () => {
     const fetchReservations = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost/car-dealership/api/get_reservations.php', {
+            const response = await fetch(`${API_BASE_URL}/get_reservations.php`, {
                 credentials: 'include'
             });
             if (!response.ok) {
                 const data = await response.json();
                 throw new Error(data.error || 'Failed to fetch reservations');
-            }
-            const data = await response.json();
+            }            const data = await response.json();
+            console.log('Reservations data:', data.data); // Debug log
+            data.data?.forEach(reservation => {
+                console.log('Reservation date:', {
+                    raw: reservation.reservation_date,
+                    parsed: new Date(reservation.reservation_date)
+                });
+            });
             setReservations(data.data || []);
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
-    };
-
-    const handlePayment = (reservation) => {
-        setSelectedReservation({
-            ...reservation,
-            amount: 10000 // Replace with actual reservation amount from your database
-        });
-        setIsPaymentModalOpen(true);
-    };
-
-    const handlePaymentModalClose = (success) => {
-        if (success) {
-            fetchReservations();
-        }
-        setIsPaymentModalOpen(false);
-        setSelectedReservation(null);
     };
 
     const handleViewReservation = (reservationId) => {
@@ -59,7 +54,7 @@ const MyReservations = () => {
         }
 
         try {
-            const response = await fetch('http://localhost/car-dealership/api/cancel_user_reservation.php', {
+            const response = await fetch(`${API_BASE_URL}/cancel_user_reservation.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -79,6 +74,12 @@ const MyReservations = () => {
         } catch (error) {
             setError(error.message);
         }
+    };    const handlePayment = (reservation) => {
+        setSelectedReservation({
+            id: reservation.id,
+            title: reservation.title
+        });
+        setShowPayment(true);
     };
 
     if (loading) return <div className="flex justify-center items-center p-8">
@@ -100,29 +101,27 @@ const MyReservations = () => {
                             <tr>
                                 <th className="py-3 px-4 text-left">Car</th>
                                 <th className="py-3 px-4 text-left">Date</th>
-                                <th className="py-3 px-4 text-left">Status</th>
+                                <th className="py-3 px-4 text-left">Payment Status</th>
                                 <th className="py-3 px-4 text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {reservations.map((reservation) => (
-                                <tr key={reservation.id} className="hover:bg-gray-50">
-                                    <td className="py-3 px-4 border-b">{reservation.title}</td>
+                                <tr key={reservation.id} className="hover:bg-gray-50">                                    <td className="py-3 px-4 border-b">{reservation.title}</td>
                                     <td className="py-3 px-4 border-b">
-                                        {new Date(reservation.reservation_date).toLocaleDateString()}
+                                        {reservation.reservation_date ? new Date(reservation.reservation_date).toLocaleDateString() : 'N/A'}
                                     </td>
                                     <td className="py-3 px-4 border-b">
                                         <span className={`px-3 py-1 rounded-full text-sm ${
-                                            reservation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                            reservation.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                                            reservation.status === 'reserved' ? 'bg-green-100 text-green-800' :
+                                            reservation.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                            reservation.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
                                             'bg-red-100 text-red-800'
                                         }`}>
-                                            {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
+                                            {reservation.payment_status ? reservation.payment_status.charAt(0).toUpperCase() + reservation.payment_status.slice(1) : 'N/A'}
                                         </span>
                                     </td>
                                     <td className="py-3 px-4 border-b">
-                                        {reservation.status === 'confirmed' && (
+                                        {reservation.payment_status === 'pending' && (
                                             <>
                                                 <button
                                                     onClick={() => handlePayment(reservation)}
@@ -138,14 +137,6 @@ const MyReservations = () => {
                                                 </button>
                                             </>
                                         )}
-                                        {reservation.status === 'pending' && (
-                                            <button
-                                                onClick={() => handleCancelReservation(reservation.id)}
-                                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm mr-2"
-                                            >
-                                                Cancel
-                                            </button>
-                                        )}
                                         <button
                                             onClick={() => handleViewReservation(reservation.id)}
                                             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
@@ -158,12 +149,20 @@ const MyReservations = () => {
                         </tbody>
                     </table>
                 </div>
+            </div>
+            {/* Payment Modal */}
+            {showPayment && selectedReservation && (
                 <PaymentModal
-                    isOpen={isPaymentModalOpen}
-                    onClose={handlePaymentModalClose}
+                    isOpen={showPayment}
+                    onClose={() => {
+                        setShowPayment(false);
+                        setSelectedReservation(null);
+                        // Refresh the reservations list after modal is closed
+                        fetchReservations();
+                    }}
                     reservation={selectedReservation}
                 />
-            </div>
+            )}
         </div>
     );
 };

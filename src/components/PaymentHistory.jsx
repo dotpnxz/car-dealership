@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
+
+// Dynamic API base URL for dev/prod
+const API_BASE_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost/car-dealership/api'
+  : 'https://mjautolove.site/api';
 
 const PaymentHistory = () => {
   const [payments, setPayments] = useState([]);
@@ -12,7 +18,7 @@ const PaymentHistory = () => {
   const fetchPayments = async () => {
     try {
       setError(null);
-      const response = await fetch('http://localhost/car-dealership/api/get_payments.php', {
+      const response = await fetch(`${API_BASE_URL}/get_payments.php`, {
         credentials: 'include'
       });
       
@@ -48,7 +54,7 @@ const PaymentHistory = () => {
     }
     
     try {
-      const response = await fetch('http://localhost/car-dealership/api/request_refund.php', {
+      const response = await fetch(`${API_BASE_URL}/request_refund.php`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -65,7 +71,7 @@ const PaymentHistory = () => {
       fetchPayments();
     } catch (error) {
       console.error('Error requesting refund:', error);
-      alert('Failed to request refund. Please try again later.');
+      toast.error('Failed to request refund. Please try again later.');
     }
   };
 

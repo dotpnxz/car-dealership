@@ -14,10 +14,15 @@ const Dashboard = () => {
         rejected_applications: 0
     });
 
+    // Dynamic API base URL for dev/prod
+    const API_BASE_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost/car-dealership/api'
+      : 'https://mjautolove.site/api';
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await fetch('http://localhost/car-dealership/api/get_user.php', {
+                const response = await fetch(`${API_BASE_URL}/get_user.php`, {
                     credentials: 'include'
                 });
                 const data = await response.json();
@@ -33,7 +38,7 @@ const Dashboard = () => {
 
         const fetchStats = async () => {
             try {
-                const response = await fetch('http://localhost/car-dealership/api/dashboard_stats.php', {
+                const response = await fetch(`${API_BASE_URL}/dashboard_stats.php`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {

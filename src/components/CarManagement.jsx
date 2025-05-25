@@ -37,13 +37,18 @@ const CarManagement = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedCarDetails, setSelectedCarDetails] = useState(null);
 
+  // Determine API base URL based on environment
+  const API_BASE_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost/car-dealership/api'
+    : 'https://mjautolove.site/api';
+
   useEffect(() => {
     fetchCars();
   }, []);
 
   const fetchCars = async () => {
     try {
-      const response = await fetch('http://localhost/car-dealership/api/get_cars.php', {
+      const response = await fetch(`${API_BASE_URL}/get_cars.php`, {
         credentials: 'include'
       });
       const data = await response.json();
@@ -91,7 +96,7 @@ const CarManagement = () => {
         formDataToSend.append(`images[${index}]`, file);
       });
 
-      const response = await fetch('http://localhost/car-dealership/api/add_car.php', {
+      const response = await fetch(`${API_BASE_URL}/add_car.php`, {
         method: 'POST',
         credentials: 'include',
         body: formDataToSend
@@ -155,7 +160,7 @@ const CarManagement = () => {
       formDataToSend.append('seating', formData.seating);
       formDataToSend.append('status', formData.status);
 
-      const response = await fetch('http://localhost/car-dealership/api/update_car.php', {
+      const response = await fetch(`${API_BASE_URL}/update_car.php`, {
         method: 'POST',
         body: formDataToSend,
         credentials: 'include'
@@ -191,7 +196,7 @@ const CarManagement = () => {
   const handleDeleteCar = async (carId) => {
     if (window.confirm('Are you sure you want to delete this car?')) {
       try {
-        const response = await fetch('http://localhost/car-dealership/api/delete_car.php', {
+        const response = await fetch(`${API_BASE_URL}/delete_car.php`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -218,7 +223,7 @@ const CarManagement = () => {
       formData.append('carId', carId);
       formData.append('status', newStatus);
 
-      const response = await fetch('http://localhost/car-dealership/api/update_car.php', {
+      const response = await fetch(`${API_BASE_URL}/update_car.php`, {
         method: 'POST',
         credentials: 'include',
         body: formData

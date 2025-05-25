@@ -5,6 +5,11 @@ const MyBookings = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    // Determine API base URL based on environment
+    const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';
+
     useEffect(() => {
         fetchBookings();
     }, []);
@@ -12,7 +17,7 @@ const MyBookings = () => {
     const fetchBookings = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost/car-dealership/api/get_bookings.php', {
+            const response = await fetch(`${API_BASE_URL}/get_bookings.php`, {
                 credentials: 'include'
             });
             if (!response.ok) {
@@ -30,7 +35,7 @@ const MyBookings = () => {
 
     const handleCancelBooking = async (bookingId) => {
         try {
-            const response = await fetch('http://localhost/car-dealership/api/update_booking_status.php', {
+            const response = await fetch(`${API_BASE_URL}/update_booking_status.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {

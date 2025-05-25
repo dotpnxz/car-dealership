@@ -9,9 +9,18 @@ ini_set('session.cookie_secure', 0); // Set to 1 if using HTTPS
 ini_set('session.cookie_samesite', 'Lax');
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: http://localhost:5173');
+
+// Allow CORS for both local and live domains
+$allowed_origins = [
+    'http://localhost:5173',
+    'https://mjautolove.site'
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
 header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Methods: POST, OPTIONS, GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -49,20 +58,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit();
 }
 
+// Use db_connect.php for environment-aware DB connection
+require_once __DIR__ . '/db_connect.php';
+
 try {
-    $servername = "localhost";
-    $username = "root";
-    $password = "admin";
-    $dbname = "accounts_user";
-
-    // Debug: Log connection attempt
-    error_log("Attempting to connect to database: $dbname");
-
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Debug: Log successful connection
-    error_log("Database connection successful");
+    $conn = db_connect();
 
     $data = json_decode(file_get_contents('php://input'), true);
 

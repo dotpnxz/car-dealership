@@ -13,9 +13,12 @@ const ReservationList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
-    const updateReservationStatus = async (reservationId, newStatus) => {
+    // Dynamic API base URL for dev/prod
+    const API_BASE_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost/car-dealership/api'
+      : 'https://mjautolove.site/api';    const updateReservationStatus = async (reservationId, newStatus) => {
         try {
-            const response = await fetch('http://localhost/car-dealership/api/update_reservation_status.php', {
+            const response = await fetch(`${API_BASE_URL}/update_reservation_status.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -24,7 +27,7 @@ const ReservationList = () => {
                 credentials: 'include',
                 body: JSON.stringify({
                     reservation_id: reservationId,
-                    status: newStatus
+                    payment_status: newStatus
                 })
             });
 
@@ -63,7 +66,7 @@ const ReservationList = () => {
         const fetchReservations = async () => {
             try {
                 console.log('Fetching reservations. Account type:', accountType);
-                const response = await fetch('http://localhost/car-dealership/api/get_reservations.php', {
+                const response = await fetch(`${API_BASE_URL}/get_reservations.php`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -139,8 +142,7 @@ const ReservationList = () => {
     const filteredAndSortedReservations = React.useMemo(() => {
         let filtered = reservations.filter(reservation => 
             reservation.fullname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            reservation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            reservation.status.toLowerCase().includes(searchTerm.toLowerCase())
+            reservation.title.toLowerCase().includes(searchTerm.toLowerCase()) ||            reservation.payment_status.toLowerCase().includes(searchTerm.toLowerCase())
         );
         return sortData(filtered, sortConfig.key);
     }, [reservations, searchTerm, sortConfig]);
@@ -264,12 +266,11 @@ const ReservationList = () => {
                                             onClick={() => requestSort('reservation_date')}
                                         >
                                             Reservation Date {getSortIndicator('reservation_date')}
-                                        </th>
-                                        <th 
+                                        </th>                                        <th 
                                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                                            onClick={() => requestSort('status')}
+                                            onClick={() => requestSort('payment_status')}
                                         >
-                                            Status {getSortIndicator('status')}
+                                            Payment Status {getSortIndicator('payment_status')}
                                         </th>
                                         {(accountType === 'admin' || accountType === 'staff') && (
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -296,38 +297,42 @@ const ReservationList = () => {
                                                     {new Date(reservation.reservation_date).toLocaleDateString()}
                                                 </div>
                                             </td>
-                                            <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                                <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold">
-                                                    {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
+                                            <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">                                                <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${
+                                                    reservation.payment_status === 'paid' ? 'bg-green-100 text-green-800' :
+                                                    reservation.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-red-100 text-red-800'
+                                                }`}>
+                                                    {reservation.payment_status.charAt(0).toUpperCase() + reservation.payment_status.slice(1)}
                                                 </span>
                                             </td>
                                             {(accountType === 'admin' || accountType === 'staff') && (
                                                 <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                                    <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
-                                                        <button
-                                                            onClick={() => updateReservationStatus(reservation.id, 'confirmed')}
-                                                            className="text-xs sm:text-sm text-blue-600 hover:text-blue-900"
-                                                        >
-                                                            Confirm
-                                                        </button>
-                                                        <button
-                                                            onClick={() => updateReservationStatus(reservation.id, 'reserved')}
-                                                            className="text-xs sm:text-sm text-purple-600 hover:text-purple-900"
-                                                        >
-                                                            Reserve
-                                                        </button>
-                                                        <button
-                                                            onClick={() => updateReservationStatus(reservation.id, 'acquired')}
-                                                            className="text-xs sm:text-sm text-green-600 hover:text-green-900"
-                                                        >
-                                                            Acquire
-                                                        </button>
-                                                        <button
-                                                            onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
-                                                            className="text-xs sm:text-sm text-red-600 hover:text-red-900"
-                                                        >
-                                                            Cancel
-                                                        </button>
+                                                    <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">                                                        {reservation.payment_status === 'pending' && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => updateReservationStatus(reservation.id, 'paid')}
+                                                                    className="text-xs sm:text-sm text-green-600 hover:text-green-900"
+                                                                >
+                                                                    Mark as Paid
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
+                                                                    className="text-xs sm:text-sm text-red-600 hover:text-red-900"
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        {reservation.payment_status === 'paid' && (
+                                                            <span className="text-xs sm:text-sm text-green-600">
+                                                                Payment Completed
+                                                            </span>
+                                                        )}
+                                                        {reservation.payment_status === 'cancelled' && (
+                                                            <span className="text-xs sm:text-sm text-red-600">
+                                                                Cancelled
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </td>
                                             )}

@@ -15,10 +15,15 @@ const AdminDashboard = () => {
     });
 
     useEffect(() => {
+        // Determine API base URL based on environment
+        const API_BASE_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost/car-dealership/api'
+            : 'https://mjautolove.site/api';
+
         // Fetch dashboard statistics
         const fetchStats = async () => {
             try {
-                const response = await fetch('http://localhost/car-dealership/api/dashboard_stats.php', {
+                const response = await fetch(`${API_BASE_URL}/dashboard_stats.php`, {
                     credentials: 'include'
                 });
                 

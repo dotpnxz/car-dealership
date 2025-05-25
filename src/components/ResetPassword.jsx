@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { securityQuestions } from '../utils/securityQuestions';
 
 const ResetPassword = () => {
@@ -13,13 +14,18 @@ const ResetPassword = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Dynamic API base URL for dev/prod
+    const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';
+
     const handleUsernameSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
         try {
-            const response = await fetch('http://localhost/car-dealership/api/get_security_question.php', {
+            const response = await fetch(`${API_BASE_URL}/get_security_question.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username })
@@ -57,7 +63,7 @@ const ResetPassword = () => {
         }
 
         try {
-            const response = await fetch('http://localhost/car-dealership/api/reset_password.php', {
+            const response = await fetch(`${API_BASE_URL}/reset_password.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -70,7 +76,7 @@ const ResetPassword = () => {
             const data = await response.json();
 
             if (data.success) {
-                alert('Password reset successful');
+                toast.success('Password reset successful');
                 navigate('/login');
             } else {
                 setError(data.message || 'Failed to reset password');

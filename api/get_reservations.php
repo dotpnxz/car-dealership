@@ -1,12 +1,22 @@
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: http://localhost:5173');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+
+// Allow CORS for both local and live domains
+$allowed_origins = [
+    'http://localhost:5173',
+    'https://mjautolove.site'
+];
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: $origin");
+}
 header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
+    http_response_code(200);
+    exit();
 }
 
 require 'db_connect.php';
@@ -38,7 +48,7 @@ try {
             rc.fullname,
             rc.title,
             rc.reservation_date,
-            rc.status,
+            rc.payment_status,
             u.username as user_name,
             rc.user_id
         FROM reserved_cars rc

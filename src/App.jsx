@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Collection from './components/Collection';
-import Sell from './components/Sell';
 import AboutUs from './components/AboutUs';
 import BookVisit from './components/BookVisit';
 import Location from './components/Location';
@@ -79,7 +78,7 @@ const MainContent = () => {
                             <Route path="/RegistrationForm" element={<RegistrationForm />} />
                             <Route path="/LoginForm" element={<LoginForm />} />  
                             <Route path="/Collection" element={ <Collection />} />  
-                            <Route path="/Sell" element={ <Sell />} />  
+                           
                          
                             <Route path="*" element={
                                 <>

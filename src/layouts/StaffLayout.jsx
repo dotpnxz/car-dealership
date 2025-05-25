@@ -9,10 +9,15 @@ const StaffLayout = () => {
     const [notificationCount, setNotificationCount] = useState(0);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    // Dynamic API base URL for dev/prod
+    const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';
+
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
-                const response = await fetch('http://localhost/car-dealership/api/get_notifications.php', {
+                const response = await fetch(`${API_BASE_URL}/get_notifications.php`, {
                     credentials: 'include'
                 });
                 const data = await response.json();
@@ -40,7 +45,7 @@ const StaffLayout = () => {
 
     const handleAnnouncementClick = async () => {
         try {
-            await fetch('http://localhost/car-dealership/api/mark_notifications_read.php', {
+            await fetch(`${API_BASE_URL}/mark_notifications_read.php`, {
                 credentials: 'include'
             });
             setNotificationCount(0);

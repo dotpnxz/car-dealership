@@ -2,6 +2,11 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from './AuthContext';
 
 const Profile = () => {
+    // Dynamic API base URL for dev/prod
+    const API_BASE_URL = window.location.hostname === 'localhost'
+      ? 'http://localhost/car-dealership/api'
+      : 'https://mjautolove.site/api';
+
     const initialState = {
         surname: '',
         firstName: '',
@@ -39,7 +44,7 @@ const Profile = () => {
     const fetchProfile = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('http://localhost/car-dealership/api/get_profile.php', {
+            const response = await fetch(`${API_BASE_URL}/get_profile.php`, {
                 credentials: 'include'
             });
             
@@ -109,7 +114,7 @@ const Profile = () => {
                 delete dataToSend.confirmPassword;
             }
 
-            const response = await fetch('http://localhost/car-dealership/api/update_profile.php', {
+            const response = await fetch(`${API_BASE_URL}/update_profile.php`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
