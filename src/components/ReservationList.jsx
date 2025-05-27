@@ -4,7 +4,7 @@ import { AuthContext } from './AuthContext';
 
 const ReservationList = () => {
     const navigate = useNavigate();
-    const { isLoggedIn, userId, accountType } = React.useContext(AuthContext);
+    const { isLoggedIn, userId, accountType, user } = React.useContext(AuthContext);
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -159,6 +159,65 @@ const ReservationList = () => {
         return sortConfig.direction === 'ascending' ? '↑' : '↓';
     };
 
+    const ReservationActions = ({ reservation }) => {
+        const { user, accountType } = React.useContext(AuthContext);
+        const navigate = useNavigate();
+
+        const handlePassRequirements = (reservationId) => {
+            navigate(`/pass-requirements/${reservationId}`);
+        };
+
+        const handlePayRemaining = (reservationId) => {
+            console.log('Handle Pay Remaining for reservation:', reservationId);
+        };
+
+        if (accountType === 'admin' || accountType === 'staff') {
+            return (
+                <>
+                    {reservation.payment_status === 'pending' && (
+                        <>
+                            <button
+                                onClick={() => updateReservationStatus(reservation.id, 'paid')}
+                                className="text-xs sm:text-sm text-green-600 hover:text-green-900"
+                            >
+                                Mark as Paid
+                            </button>
+                            <button
+                                onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
+                                className="text-xs sm:text-sm text-red-600 hover:text-red-900"
+                            >
+                                Cancel
+                            </button>
+                        </>
+                    )}
+                    {reservation.payment_status === 'paid' && (
+                        <span className="text-xs sm:text-sm text-green-600">
+                            Payment Completed
+                        </span>
+                    )}
+                    {reservation.payment_status === 'cancelled' && (
+                        <span className="text-xs sm:text-sm text-red-600">
+                            Cancelled
+                        </span>
+                    )}
+                </>
+            );
+        }
+
+        if (reservation.payment_status === 'paid' && reservation.reservation_type === 'loan') {
+            return (
+                <button 
+                    onClick={() => handlePassRequirements(reservation.id)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                    Pass Requirements
+                </button>
+            );
+        }
+        
+        return null;
+    };
+
     const Pagination = () => (
         <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4 px-4">
             <div className="text-xs sm:text-sm text-gray-700 order-2 sm:order-1">
@@ -305,36 +364,21 @@ const ReservationList = () => {
                                                     {reservation.payment_status.charAt(0).toUpperCase() + reservation.payment_status.slice(1)}
                                                 </span>
                                             </td>
+                                            {/* Log accountType and user?.role before rendering action cells */}
+                                            {console.log('Rendering actions for accountType:', accountType, 'and user?.role:', user?.role)}
                                             {(accountType === 'admin' || accountType === 'staff') && (
                                                 <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                                                    <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">                                                        {reservation.payment_status === 'pending' && (
-                                                            <>
-                                                                <button
-                                                                    onClick={() => updateReservationStatus(reservation.id, 'paid')}
-                                                                    className="text-xs sm:text-sm text-green-600 hover:text-green-900"
-                                                                >
-                                                                    Mark as Paid
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
-                                                                    className="text-xs sm:text-sm text-red-600 hover:text-red-900"
-                                                                >
-                                                                    Cancel
-                                                                </button>
-                                                            </>
-                                                        )}
-                                                        {reservation.payment_status === 'paid' && (
-                                                            <span className="text-xs sm:text-sm text-green-600">
-                                                                Payment Completed
-                                                            </span>
-                                                        )}
-                                                        {reservation.payment_status === 'cancelled' && (
-                                                            <span className="text-xs sm:text-sm text-red-600">
-                                                                Cancelled
-                                                            </span>
-                                                        )}
+                                                    <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
+                                                        <ReservationActions reservation={reservation} />
                                                     </div>
                                                 </td>
+                                            )}
+                                            {(accountType !== 'admin' && accountType !== 'staff') && (
+                                              <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                                                  <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
+                                                    <ReservationActions reservation={reservation} />
+                                                  </div>
+                                              </td>
                                             )}
                                         </tr>
                                     ))}

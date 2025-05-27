@@ -15,6 +15,9 @@ const MyReservations = () => {
         ? 'http://localhost/car-dealership/api'
         : 'https://mjautolove.site/api';
 
+    // Define the reservation fee
+    const RESERVATION_FEE = 10000; // Fixed reservation fee of 10,000 PHP
+
     useEffect(() => {
         fetchReservations();
     }, []);
@@ -28,8 +31,9 @@ const MyReservations = () => {
             if (!response.ok) {
                 const data = await response.json();
                 throw new Error(data.error || 'Failed to fetch reservations');
-            }            const data = await response.json();
-            console.log('Reservations data:', data.data); // Debug log
+            }
+            const data = await response.json();
+            console.log('Reservations data:', data.data);
             data.data?.forEach(reservation => {
                 console.log('Reservation date:', {
                     raw: reservation.reservation_date,
@@ -45,7 +49,7 @@ const MyReservations = () => {
     };
 
     const handleViewReservation = (reservationId) => {
-        navigate(`/reservation/${reservationId}`);
+        navigate(`/buyer/car-loan-status/${reservationId}`);
     };
 
     const handleCancelReservation = async (reservationId) => {
@@ -74,10 +78,28 @@ const MyReservations = () => {
         } catch (error) {
             setError(error.message);
         }
-    };    const handlePayment = (reservation) => {
+    };
+
+    const handlePayment = (reservation) => {
         setSelectedReservation({
             id: reservation.id,
-            title: reservation.title
+            title: reservation.title,
+            amount: RESERVATION_FEE // Pass reservation fee for initial payment
+        });
+        setShowPayment(true);
+    };
+
+    const handlePassRequirements = (reservationId) => {
+        navigate(`/requirements/${reservationId}`);
+    };
+
+    // Handler for Pay Remaining button
+    const handlePayRemaining = (reservation) => {
+        const remainingAmount = reservation.car_price - RESERVATION_FEE; // Use defined constant
+        setSelectedReservation({
+            id: reservation.id,
+            title: reservation.title,
+            amount: remainingAmount // Pass remaining amount
         });
         setShowPayment(true);
     };
@@ -101,15 +123,25 @@ const MyReservations = () => {
                             <tr>
                                 <th className="py-3 px-4 text-left">Car</th>
                                 <th className="py-3 px-4 text-left">Date</th>
+                                <th className="py-3 px-4 text-left">Type</th>
                                 <th className="py-3 px-4 text-left">Payment Status</th>
                                 <th className="py-3 px-4 text-left">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {reservations.map((reservation) => (
-                                <tr key={reservation.id} className="hover:bg-gray-50">                                    <td className="py-3 px-4 border-b">{reservation.title}</td>
+                                <tr key={reservation.id} className="hover:bg-gray-50">
+                                    <td className="py-3 px-4 border-b">{reservation.title}</td>
                                     <td className="py-3 px-4 border-b">
                                         {reservation.reservation_date ? new Date(reservation.reservation_date).toLocaleDateString() : 'N/A'}
+                                    </td>
+                                    <td className="py-3 px-4 border-b">
+                                        <span className={`px-3 py-1 rounded-full text-sm ${
+                                            reservation.reservation_type === 'loan' ? 'bg-purple-100 text-purple-800' :
+                                            'bg-blue-100 text-blue-800'
+                                        }`}>
+                                            {reservation.reservation_type ? reservation.reservation_type.charAt(0).toUpperCase() + reservation.reservation_type.slice(1) : 'Full'}
+                                        </span>
                                     </td>
                                     <td className="py-3 px-4 border-b">
                                         <span className={`px-3 py-1 rounded-full text-sm ${
@@ -136,6 +168,22 @@ const MyReservations = () => {
                                                     Cancel
                                                 </button>
                                             </>
+                                        )}
+                                        {reservation.reservation_type === 'loan' && reservation.payment_status === 'paid' && !reservation.requirements_submitted && (
+                                            <button
+                                                onClick={() => handlePassRequirements(reservation.id)}
+                                                className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded text-sm mr-2"
+                                            >
+                                                Pass Requirements
+                                            </button>
+                                        )}
+                                        {reservation.reservation_type === 'full' && reservation.payment_status === 'paid' && (
+                                            <button
+                                                onClick={() => handlePayRemaining(reservation)}
+                                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm mr-2"
+                                            >
+                                                Pay Remaining
+                                            </button>
                                         )}
                                         <button
                                             onClick={() => handleViewReservation(reservation.id)}

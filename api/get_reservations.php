@@ -27,7 +27,7 @@ try {
     // Debug session information
     error_log("Full session data: " . print_r($_SESSION, true));
     error_log("Session user_id: " . (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'not set'));
-    error_log("Session accountType: " . (isset($_SESSION['accountType']) ? $_SESSION['accountType'] : 'not set')); // Use the correct variable name
+    error_log("Session accountType: " . (isset($_SESSION['accountType']) ? $_SESSION['accountType'] : 'not set'));
 
     if (!isset($_SESSION['user_id'])) {
         error_log("User not logged in - redirecting to login");
@@ -35,7 +35,7 @@ try {
     }
 
     $userId = $_SESSION['user_id'];
-    $accountType = $_SESSION['accountType'] ?? ''; // Use the correct variable name and handle potential unset
+    $accountType = $_SESSION['accountType'] ?? '';
 
     // Debug account type
     error_log("Account type from session: " . $accountType);
@@ -49,24 +49,27 @@ try {
             rc.title,
             rc.reservation_date,
             rc.payment_status,
+            rc.reservation_type,
             u.username as user_name,
-            rc.user_id
+            rc.user_id,
+            CASE WHEN lr.id IS NOT NULL THEN TRUE ELSE FALSE END as requirements_submitted,
+            c.price as car_price
         FROM reserved_cars rc
         LEFT JOIN users u ON rc.user_id = u.id
+        LEFT JOIN loan_requirements lr ON rc.id = lr.reservation_id
+        LEFT JOIN cars c ON rc.car_id = c.id
         WHERE ";
 
-    // Modified condition to include staff
     if ($accountType === 'admin' || $accountType === 'staff') {
-        $sql .= "1=1"; // Admin and staff see all
+        $sql .= "1=1";
     } else {
-        $sql .= "rc.user_id = :user_id"; // Regular users see their own
+        $sql .= "rc.user_id = :user_id";
     }
 
     $sql .= " ORDER BY rc.reservation_date DESC";
 
     $stmt = $conn->prepare($sql);
 
-    // Modified condition to include staff
     if ($accountType !== 'admin' && $accountType !== 'staff') {
         $stmt->bindParam(':user_id', $userId);
     }
@@ -74,7 +77,6 @@ try {
     $stmt->execute();
     $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Debug information
     error_log("Number of reservations found: " . count($reservations));
     error_log("Reservations data: " . print_r($reservations, true));
     error_log("SQL Query executed: " . $stmt->queryString);

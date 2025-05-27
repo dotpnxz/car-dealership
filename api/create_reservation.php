@@ -23,8 +23,10 @@ require 'db_connect.php';
 try {
     // Get POST data
     $data = json_decode(file_get_contents('php://input'), true);
-    error_log("Received data: " . print_r($data, true));
-    
+    error_log("Received raw data: " . file_get_contents('php://input'));
+    error_log("Decoded data: " . print_r($data, true));
+    error_log("Reservation type: " . ($data['reservation_type'] ?? 'not set'));
+
     if (!isset($data['car_id']) || !isset($data['user_id']) || !isset($data['title'])) {
         throw new Exception('Missing required fields');
     }
@@ -32,6 +34,10 @@ try {
     $carId = $data['car_id'];
     $userId = $data['user_id'];
     $title = $data['title'];
+    $reservationType = isset($data['reservation_type']) && in_array($data['reservation_type'], ['loan', 'full']) 
+        ? $data['reservation_type'] 
+        : 'full';
+    error_log("Final reservation type: " . $reservationType);
 
     $conn = db_connect();
     
@@ -97,8 +103,9 @@ try {
             fullname, 
             contactNo, 
             address, 
-            payment_status
-        ) VALUES (?, ?, ?, ?, ?, ?, 'pending')
+            payment_status,
+            reservation_type
+        ) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)
     ");
 
     $stmt->execute([
@@ -107,7 +114,8 @@ try {
         $title,
         $user['fullname'],
         $user['contactNo'],
-        $user['address']
+        $user['address'],
+        $reservationType
     ]);
 
     $reservationId = $conn->lastInsertId();

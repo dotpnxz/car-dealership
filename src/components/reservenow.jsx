@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { AuthContext } from './AuthContext';
 import { toast } from 'react-toastify';
 import PaymentModal from './Paymentmodal';
@@ -9,6 +9,8 @@ const ReserveNow = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { isLoggedIn, userId } = React.useContext(AuthContext);
+    const [searchParams] = useSearchParams();
+    const reservationType = searchParams.get('type'); // 'full' or 'loan'
     const [car, setCar] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -71,10 +73,12 @@ const ReserveNow = () => {
 
         setIsSubmitting(true);
         try {
+            const { type } = location.state || { type: 'full' };
             const reservationData = {
                 car_id: carId,
                 user_id: userId,
-                title: car.title
+                title: car.title,
+                reservation_type: type
             };
 
             console.log("Sending reservation data:", reservationData);
@@ -94,12 +98,15 @@ const ReserveNow = () => {
             }
 
             const data = await res.json();
-            console.log("Reservation API response:", data);            if (data.success) {
+            console.log("Reservation API response:", data);
+
+            if (data.success) {
                 // Set up reservation data for payment
                 setReservation({
                     id: data.reservation_id,
-                    amount: parseFloat(car.price),
-                    title: car.title
+                    amount: 10000,
+                    title: car.title,
+                    reservation_type: type
                 });
                 setShowPayment(true);
                 toast.success("Reservation created! Please complete your payment.");
@@ -276,11 +283,15 @@ const ReserveNow = () => {
                     </div>
                 </div>
             </div>
-            {/* Payment Modal */}
+            
+            {/* Payment Modal - Move this outside the flex container */}
             {showPayment && reservation && (
                 <PaymentModal
                     isOpen={showPayment}
-                    onClose={() => setShowPayment(false)}
+                    onClose={() => {
+                        setShowPayment(false);
+                        setReservation(null);
+                    }}
                     reservation={reservation}
                 />
             )}

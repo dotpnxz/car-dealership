@@ -34,6 +34,9 @@ import ResetPassword from './components/ResetPassword';
 import LoanRequirements from './components/LoanRequirements';
 import AvailProcess from './components/AvailProcess';
 import PaymentManagement from './components/PaymentManagement';
+import PassRequirements from './components/PassRequirements';
+import CarLoanStatus from './components/CarLoanStatus';
+import CarLoanManagement from './components/CarLoanManagement'; // Import CarLoanManagement
 
 const MainContent = () => {
     const location = useLocation();
@@ -115,6 +118,11 @@ const MainContent = () => {
                                     <BookingManagement />
                                 </ProtectedRoute>
                             } />
+                            <Route path="/admin/car-loan-management" element={
+                                <ProtectedRoute requiredRole="admin">
+                                    <CarLoanManagement />
+                                </ProtectedRoute>
+                            } />
                             <Route path="/admin/reservations" element={
                                 <ProtectedRoute requiredRole="admin">
                                     <ReservationList />
@@ -150,6 +158,11 @@ const MainContent = () => {
                             <Route path="/staff/manage-bookings" element={
                                 <ProtectedRoute requiredRole="staff">
                                     <BookingManagement />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/staff/manage-car-loan" element={
+                                <ProtectedRoute requiredRole="staff">
+                                    <CarLoanManagement />
                                 </ProtectedRoute>
                             } />
                             <Route path="/staff/manage-reservations" element={
@@ -194,6 +207,16 @@ const MainContent = () => {
                                     <PaymentHistory />
                                 </ProtectedRoute>
                             } />
+                            <Route path="/buyer/car-loan-status" element={
+                                <ProtectedRoute requiredRole="buyer">
+                                    <CarLoanStatus />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/buyer/car-loan-status/:reservationId" element={
+                                <ProtectedRoute requiredRole="buyer">
+                                    <CarLoanStatus />
+                                </ProtectedRoute>
+                            } />
 
                             {/* Auth Routes */}
                             <Route path="/login" element={<LoginForm />} />
@@ -201,6 +224,7 @@ const MainContent = () => {
                             <Route path="/reset-password" element={<ResetPassword />} />
                             <Route path="/loan-requirements" element={<LoanRequirements />} />
                             <Route path="/avail-process" element={<AvailProcess />} />
+                            <Route path="/requirements/:reservationId" element={<PassRequirements />} />
                         </Routes>
                     </main>
                 </div>

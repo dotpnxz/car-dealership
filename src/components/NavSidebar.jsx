@@ -65,21 +65,24 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
       admin: [
         { to: '/admin/users', icon: <Users size={20} />, label: 'User Management' },
         { to: '/admin/cars', icon: <Car size={20} />, label: 'Car Management' },
-        { to: '/admin/bookings', icon: <Calendar size={20} />, label: 'Booking Management' },
+        { to: '/admin/car-loan-management', icon: <ClipboardList size={20} />, label: 'Car Loan Management' },
+        { to: '/admin/bookings', icon: <Calendar size={20} />, label: 'Test Drive Management' },
         { to: '/admin/reservations', icon: <ClipboardList size={20} />, label: 'Reservation Management' },
         { to: '/admin/payment-management', icon: <CreditCard size={20} />, label: 'Payment Management' },
       ],
       staff: [
         { to: '/staff/manage-profile', icon: <UserCircle size={20} />, label: 'Staff Profile' },
         { to: '/staff/manage-cars', icon: <Car size={20} />, label: 'Manage Cars' },
-        { to: '/staff/manage-bookings', icon: <Calendar size={20} />, label: 'Manage Bookings' },
+        { to: '/staff/car-loan-management', icon: <ClipboardList size={20} />, label: 'Car Loan Management' },
+        { to: '/staff/manage-bookings', icon: <Calendar size={20} />, label: 'Manage Test Drive' },
         { to: '/staff/manage-reservations', icon: <ClipboardList size={20} />, label: 'Reservation Management' },
         { to: '/staff/payment-management', icon: <CreditCard size={20} />, label: 'Payment Management' },
       ],
       buyer: [
         { to: '/buyer/profile', icon: <UserCircle size={20} />, label: 'Profile' },
-        { to: '/buyer/mybookings', icon: <Calendar size={20} />, label: 'My Bookings' },
+        { to: '/buyer/mybookings', icon: <Calendar size={20} />, label: 'Test Drive Schedule' },
         { to: '/buyer/myreservations', icon: <ClipboardList size={20} />, label: 'My Reservations' },
+        { to: '/buyer/car-loan-status', icon: <Car size={20} />, label: 'Car Loan Status' },
         { to: '/buyer/payment-history', icon: <CreditCard size={20} />, label: 'Payment History' },
       ],
     };
@@ -89,9 +92,10 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
 
   return (
     <div className={`fixed left-0 ${
-      ['/', '/sell', '/book-visit', '/avail-process', '/collection', '/about', '/location','/loan-requirements','/reservenow'].includes(location.pathname) 
-      ? 'top-32 h-[calc(100vh-8rem)]' 
-      : 'top-0 h-screen'
+      ['/', '/sell', '/book-visit', '/avail-process', '/collection', '/about', '/location', '/loan-requirements', '/reservenow'].includes(location.pathname) || 
+  location.pathname.startsWith('/requirements/') // This handles /requirements/1, /requirements/2, etc.
+    ? 'top-32 h-[calc(100vh-8rem)]' 
+    : 'top-0 h-screen'
     } 
       bg-white shadow-lg transition-all duration-300 z-50 
       ${isCollapsed ? 'w-12 sm:w-16' : 'w-48 sm:w-64'}`}>
