@@ -82,6 +82,7 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
         { to: '/buyer/profile', icon: <UserCircle size={20} />, label: 'Profile' },
         { to: '/buyer/mybookings', icon: <Calendar size={20} />, label: 'Test Drive Schedule' },
         { to: '/buyer/myreservations', icon: <ClipboardList size={20} />, label: 'My Reservations' },
+        { to: '/buyer/mypurchases', icon: <ShoppingCart size={20} />, label: 'My Purchases' },
         { to: '/buyer/car-loan-status', icon: <Car size={20} />, label: 'Car Loan Status' },
         { to: '/buyer/payment-history', icon: <CreditCard size={20} />, label: 'Payment History' },
       ],
@@ -93,7 +94,7 @@ const NavSidebar = ({ isLoggedIn, accountType: propAccountType, isCollapsed, set
   return (
     <div className={`fixed left-0 ${
       ['/', '/sell', '/book-visit', '/avail-process', '/collection', '/about', '/location', '/loan-requirements', '/reservenow'].includes(location.pathname) || 
-  location.pathname.startsWith('/requirements/') // This handles /requirements/1, /requirements/2, etc.
+  location.pathname.startsWith('/requirements/') || location.pathname.startsWith('/buynow') // This handles /requirements/1, /requirements/2, etc.
     ? 'top-32 h-[calc(100vh-8rem)]' 
     : 'top-0 h-screen'
     } 

@@ -520,6 +520,22 @@ const Collection = () => {
                       >
                         {selectedCar?.status === 'reserved' ? 'Reserved' : 'Reserve Now'}
                       </button>
+                      <Link
+                        to="/buynow"
+                        state={{ car: selectedCar }}
+                        className={`${
+                          selectedCar?.status === 'reserved'
+                            ? 'opacity-50 cursor-not-allowed'
+                            : ''
+                        }`}
+                      >
+                        <button
+                          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+                          disabled={selectedCar?.status === 'reserved'}
+                        >
+                          Buy Now
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 </div>

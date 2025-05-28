@@ -37,6 +37,8 @@ import PaymentManagement from './components/PaymentManagement';
 import PassRequirements from './components/PassRequirements';
 import CarLoanStatus from './components/CarLoanStatus';
 import CarLoanManagement from './components/CarLoanManagement'; // Import CarLoanManagement
+import MyPurchases from './components/MyPurchases';
+import BuyNow from './components/BuyNow';
 
 const MainContent = () => {
     const location = useLocation();
@@ -215,6 +217,16 @@ const MainContent = () => {
                             <Route path="/buyer/car-loan-status/:reservationId" element={
                                 <ProtectedRoute requiredRole="buyer">
                                     <CarLoanStatus />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/buyer/mypurchases" element={
+                                <ProtectedRoute requiredRole="buyer">
+                                    <MyPurchases />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/buynow" element={
+                                <ProtectedRoute requiredRole="buyer">
+                                    <BuyNow />
                                 </ProtectedRoute>
                             } />
 
