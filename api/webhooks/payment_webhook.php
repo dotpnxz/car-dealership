@@ -78,7 +78,9 @@ try {
     $attributes = $event['data']['attributes'] ?? null;
     if (!$attributes) {
         throw new Exception("Missing attributes in payload");
-    }    if ($attributes['type'] === 'payment.paid' || $event['type'] === 'payment.paid') {
+    }
+
+    if ($attributes['type'] === 'payment.paid' || $event['type'] === 'payment.paid') {
         error_log("Event data structure: " . json_encode($event, JSON_PRETTY_PRINT));
         
         // PayMongo nests the payment data under data.attributes.data
@@ -99,63 +101,79 @@ try {
         
         // Add detailed logging of the payment data structure at each level
         error_log("Payment Data: " . json_encode($paymentData, JSON_PRETTY_PRINT));
-        error_log("Payment Attributes: " . json_encode($paymentAttributes, JSON_PRETTY_PRINT));        // Try multiple approaches to find the payment reference
+        error_log("Payment Attributes: " . json_encode($paymentAttributes, JSON_PRETTY_PRINT));
+
+        // Try multiple approaches to find the payment reference
         $paymentReference = null;
+        $transactionType = null;
         
-        // First check external reference number (this is what we set in generate_payment_link.php)
+        // First check external reference number
         if (!empty($paymentAttributes['external_reference_number'])) {
             error_log("Looking up reference by external_reference_number: " . $paymentAttributes['external_reference_number']);
-            // Try to find the reservation ID
-            $findRefSql = "SELECT id, payment_reference FROM reserved_cars WHERE id = ? LIMIT 1";
+            
+            // Check both purchases and reservations
+            $findRefSql = "
+                SELECT 'purchase' as type, id, payment_reference 
+                FROM purchases 
+                WHERE id = ? 
+                UNION 
+                SELECT 'reservation' as type, id, payment_reference 
+                FROM reserved_cars 
+                WHERE id = ?
+            ";
             $findRefStmt = $conn->prepare($findRefSql);
-            if ($findRefStmt && $findRefStmt->execute([$paymentAttributes['external_reference_number']])) {
+            if ($findRefStmt && $findRefStmt->execute([
+                $paymentAttributes['external_reference_number'],
+                $paymentAttributes['external_reference_number']
+            ])) {
                 $result = $findRefStmt->fetch(PDO::FETCH_ASSOC);
                 if ($result) {
                     $paymentReference = $result['payment_reference'];
-                    error_log("Found payment reference in database: " . $paymentReference);
+                    $transactionType = $result['type'];
+                    error_log("Found payment reference in database: " . $paymentReference . " (Type: " . $transactionType . ")");
                 } else {
-                    error_log("No reservation found with ID: " . $paymentAttributes['external_reference_number']);
+                    error_log("No transaction found with ID: " . $paymentAttributes['external_reference_number']);
                 }
             } else {
-                error_log("Database error while looking up reservation");
+                error_log("Database error while looking up transaction");
             }
         }
         
         // If still not found, try the description
         if (!$paymentReference && !empty($paymentAttributes['description'])) {
-            if (preg_match('/RES\d+_\d+/', $paymentAttributes['description'], $matches)) {
+            if (preg_match('/(PUR|RES)\d+_\d+/', $paymentAttributes['description'], $matches)) {
                 $paymentReference = $matches[0];
-                error_log("Found payment reference in description: " . $paymentReference);
+                $transactionType = strpos($paymentReference, 'PUR') === 0 ? 'purchase' : 'reservation';
+                error_log("Found payment reference in description: " . $paymentReference . " (Type: " . $transactionType . ")");
             }
         }
-        
-        error_log("Payment Data: " . json_encode($paymentData));
-        error_log("Payment Attributes: " . json_encode($paymentAttributes));
-
-        error_log("Payment Amount: " . $amount);
-        error_log("Payment Reference: " . $paymentReference);
 
         if (!$paymentReference) {
             throw new Exception("Missing payment reference");
         }
 
-        if ($amount > 0) {            // Update payment_status from pending to paid            // First verify the reservation exists and is pending
-            $checkSql = "SELECT id, payment_status FROM reserved_cars WHERE payment_reference = ?";
+        if ($amount > 0) {
+            // Determine which table to update based on transaction type
+            $tableName = $transactionType === 'purchase' ? 'purchases' : 'reserved_cars';
+            
+            // First verify the transaction exists and is pending
+            $checkSql = "SELECT id, payment_status, car_id FROM $tableName WHERE payment_reference = ?";
             $checkStmt = $conn->prepare($checkSql);
             if (!$checkStmt || !$checkStmt->execute([$paymentReference])) {
-                throw new Exception("Failed to check reservation status");
+                throw new Exception("Failed to check transaction status");
             }
             
-            $reservation = $checkStmt->fetch(PDO::FETCH_ASSOC);
-            if (!$reservation) {
-                throw new Exception("No reservation found with reference: " . $paymentReference);
+            $transaction = $checkStmt->fetch(PDO::FETCH_ASSOC);
+            if (!$transaction) {
+                throw new Exception("No transaction found with reference: " . $paymentReference);
             }
             
-            if ($reservation['payment_status'] !== 'pending') {
-                error_log("Warning: Reservation " . $paymentReference . " is not in pending state (current: " . $reservation['payment_status'] . ")");
+            if ($transaction['payment_status'] !== 'pending') {
+                error_log("Warning: Transaction " . $paymentReference . " is not in pending state (current: " . $transaction['payment_status'] . ")");
             }
 
-            $sql = "UPDATE reserved_cars SET
+            // Update payment status
+            $sql = "UPDATE $tableName SET
                         payment_status = 'paid',
                         payment_amount = ?,
                         updated_at = NOW()
@@ -167,39 +185,31 @@ try {
             }
 
             $stmt->bindValue(1, $amount, PDO::PARAM_STR);
-            $stmt->bindValue(2, $paymentReference, PDO::PARAM_STR);if (!$stmt->execute()) {
+            $stmt->bindValue(2, $paymentReference, PDO::PARAM_STR);
+            
+            if (!$stmt->execute()) {
                 throw new Exception("Failed to update payment status");
             }
 
             error_log("Payment status updated successfully for payment reference: {$paymentReference}");
             
-            // Get the car_id from the reservation
-            $selectSql = "SELECT car_id FROM reserved_cars WHERE payment_reference = ?";
-            $selectStmt = $conn->prepare($selectSql);
-            if (!$selectStmt) {
-                throw new Exception("Failed to prepare car selection statement");
-            }
-
-            $selectStmt->bindValue(1, $paymentReference, PDO::PARAM_STR);
-            if (!$selectStmt->execute()) {
-                throw new Exception("Failed to get car_id");
-            }
-
-            $result = $selectStmt->fetch(PDO::FETCH_ASSOC);
-            if ($result && isset($result['car_id'])) {
-                // Update the car's status to reserved
-                $updateCarSql = "UPDATE cars SET status = 'reserved' WHERE id = ?";
+            // Update car status based on transaction type
+            if ($transaction['car_id']) {
+                $newStatus = $transactionType === 'purchase' ? 'sold' : 'reserved';
+                $updateCarSql = "UPDATE cars SET status = ? WHERE id = ?";
                 $updateCarStmt = $conn->prepare($updateCarSql);
                 if (!$updateCarStmt) {
                     throw new Exception("Failed to prepare car update statement");
                 }
 
-                $updateCarStmt->bindValue(1, $result['car_id'], PDO::PARAM_INT);
+                $updateCarStmt->bindValue(1, $newStatus, PDO::PARAM_STR);
+                $updateCarStmt->bindValue(2, $transaction['car_id'], PDO::PARAM_INT);
+                
                 if (!$updateCarStmt->execute()) {
                     throw new Exception("Failed to update car status");
                 }
 
-                error_log("Car status updated to reserved for car_id: " . $result['car_id']);
+                error_log("Car status updated to {$newStatus} for car_id: " . $transaction['car_id']);
             }
         }
     }

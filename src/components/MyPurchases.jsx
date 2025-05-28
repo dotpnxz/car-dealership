@@ -82,7 +82,7 @@ const MyPurchases = () => {
         },
         body: JSON.stringify({
           payment_reference: purchase.id,
-          amount: purchase.amount
+          amount: purchase.payment_amount
         }),
         credentials: 'include'
       });
@@ -92,7 +92,7 @@ const MyPurchases = () => {
       if (data.success) {
         setSelectedPurchase({
           id: purchase.id,
-          amount: purchase.amount,
+          payment_amount: purchase.payment_amount,
           purchase_type: purchase.purchase_type,
           title: purchase.title,
           payment_reference: data.data.payment_reference,
@@ -172,7 +172,7 @@ const MyPurchases = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          ₱{parseFloat(purchase.amount).toLocaleString()}
+                          ₱{parseFloat(purchase.payment_amount).toLocaleString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

@@ -53,7 +53,7 @@ try {
             'user_id' => $row['user_id'],
             'title' => $row['title'],
             'purchase_type' => $row['purchase_type'],
-            'amount' => $row['amount'],
+            'payment_amount' => $row['amount'],
             'payment_status' => $row['payment_status'],
             'payment_date' => $row['payment_date'],
             'payment_reference' => $row['payment_reference'],

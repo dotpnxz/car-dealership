@@ -29,16 +29,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once(__DIR__ . '/../config/config.php');
 
-try {    $data = json_decode(file_get_contents('php://input'), true);
+try {
+    $data = json_decode(file_get_contents('php://input'), true);
     error_log("Received input: " . json_encode($data));
     
     if (!isset($data['payment_reference']) || !isset($data['amount'])) {
         throw new Exception('Missing required fields');
     }
     
-    $reservationId = $data['payment_reference'];
-    if ($reservationId <= 0) {
-        throw new Exception('Invalid reservation ID');
+    $referenceId = $data['payment_reference'];
+    if ($referenceId <= 0) {
+        throw new Exception('Invalid reference ID');
     }
 
     $amount = $data['amount'];
@@ -52,8 +53,19 @@ try {    $data = json_decode(file_get_contents('php://input'), true);
         throw new Exception("Database connection failed");
     }
 
-    // Generate unique payment reference
-    $paymentReference = 'RES' . $reservationId . '_' . time();    $client = new \GuzzleHttp\Client();
+    // Check if this is a purchase or reservation
+    $checkStmt = $conn->prepare("SELECT 'purchase' as type FROM purchases WHERE id = ? UNION SELECT 'reservation' as type FROM reserved_cars WHERE id = ?");
+    $checkStmt->execute([$referenceId, $referenceId]);
+    $typeResult = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$typeResult) {
+        throw new Exception('Invalid reference ID - not found in purchases or reservations');
+    }
+
+    // Generate unique payment reference based on type
+    $paymentReference = ($typeResult['type'] === 'purchase' ? 'PUR' : 'RES') . $referenceId . '_' . time();
+
+    $client = new \GuzzleHttp\Client();
     $secretKey = getenv('PAYMONGO_SECRET_KEY');
     $response = $client->post('https://api.paymongo.com/v1/links', [
         'headers' => [
@@ -63,41 +75,56 @@ try {    $data = json_decode(file_get_contents('php://input'), true);
         ],
         'json' => [
             'data' => [
-                'attributes' => [                    'amount' => (int)($amount * 100),
-                    'description' => "Car Reservation Fee - " . $paymentReference,
+                'attributes' => [
+                    'amount' => (int)($amount * 100),
+                    'description' => ($typeResult['type'] === 'purchase' ? "Car Purchase Payment" : "Car Reservation Fee") . " - " . $paymentReference,
                     'metadata' => [
-                        'reservation_id' => $reservationId,
+                        'reference_id' => $referenceId,
                         'payment_reference' => $paymentReference,
-                        'pm_reference_number' => $paymentReference
+                        'pm_reference_number' => $paymentReference,
+                        'type' => $typeResult['type']
                     ],
-                    'external_reference_number' => $reservationId
+                    'external_reference_number' => $referenceId
                 ]
             ]
         ]
     ]);
-      $result = json_decode($response->getBody()->getContents(), true);
-    error_log("PayMongo Response: " . json_encode($result));
 
-    if (!isset($result['data']['attributes']['checkout_url'])) {
+    $paymongoResult = json_decode($response->getBody()->getContents(), true);
+    error_log("PayMongo Response: " . json_encode($paymongoResult));
+
+    if (!isset($paymongoResult['data']['attributes']['checkout_url'])) {
         throw new Exception('Invalid response from payment provider');
     }
 
-    // Update reservation with payment reference
-    $stmt = $conn->prepare("
-        UPDATE reserved_cars 
-        SET payment_reference = ?, 
-            payment_status = 'pending',
-            updated_at = CURRENT_TIMESTAMP 
-        WHERE id = ?
-    ");
+    // Update the appropriate table based on type
+    if ($typeResult['type'] === 'purchase') {
+        $stmt = $conn->prepare("
+            UPDATE purchases 
+            SET payment_reference = ?, 
+                payment_status = 'pending',
+                updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ?
+        ");
+    } else {
+        $stmt = $conn->prepare("
+            UPDATE reserved_cars 
+            SET payment_reference = ?, 
+                payment_status = 'pending',
+                updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ?
+        ");
+    }
     
-    if (!$stmt->execute([$paymentReference, $reservationId])) {
-        throw new Exception("Failed to update reservation");
-    }    echo json_encode([
+    if (!$stmt->execute([$paymentReference, $referenceId])) {
+        throw new Exception("Failed to update " . $typeResult['type']);
+    }
+
+    echo json_encode([
         'success' => true,
         'data' => [
-            'payment_url' => $result['data']['attributes']['checkout_url'],
-            'reference' => $result['data']['id'],
+            'payment_url' => $paymongoResult['data']['attributes']['checkout_url'],
+            'reference' => $paymongoResult['data']['id'],
             'payment_reference' => $paymentReference
         ]
     ]);
