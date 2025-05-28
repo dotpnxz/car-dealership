@@ -182,12 +182,12 @@ const ReservationList = () => {
                             >
                                 Mark as Paid
                             </button>
-                            <button
+                <button 
                                 onClick={() => updateReservationStatus(reservation.id, 'cancelled')}
                                 className="text-xs sm:text-sm text-red-600 hover:text-red-900"
-                            >
+                >
                                 Cancel
-                            </button>
+                </button>
                         </>
                     )}
                     {reservation.payment_status === 'paid' && (
@@ -376,9 +376,9 @@ const ReservationList = () => {
                                             {(accountType !== 'admin' && accountType !== 'staff') && (
                                               <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                                                   <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2">
-                                                    <ReservationActions reservation={reservation} />
-                                                  </div>
-                                              </td>
+                                                        <ReservationActions reservation={reservation} />
+                                                    </div>
+                                                </td>
                                             )}
                                         </tr>
                                     ))}

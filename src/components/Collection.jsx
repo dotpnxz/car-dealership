@@ -153,7 +153,8 @@ const Collection = () => {
     cars.filter(car =>
       (selectedCategory === "All" || car.category === selectedCategory) &&
       (selectedBrand === "All" || car.brand === selectedBrand) &&
-      car.title.toLowerCase().includes(searchTerm.toLowerCase())
+      car.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      car.status !== 'sold'
     )
   );
 

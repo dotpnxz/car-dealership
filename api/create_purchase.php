@@ -94,7 +94,7 @@ try {
             user_id,
             title,
             purchase_type,
-            amount,
+            payment_amount,
             payment_status,
             purchase_date
         ) VALUES (?, ?, ?, 'full', ?, 'pending', NOW())

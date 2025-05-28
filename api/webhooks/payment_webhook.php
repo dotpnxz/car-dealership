@@ -156,8 +156,8 @@ try {
             // Determine which table to update based on transaction type
             $tableName = $transactionType === 'purchase' ? 'purchases' : 'reserved_cars';
             
-            // First verify the transaction exists and is pending
-            $checkSql = "SELECT id, payment_status, car_id FROM $tableName WHERE payment_reference = ?";
+            // First verify the transaction exists and get its details
+            $checkSql = "SELECT id, payment_status, car_id, reservation_type, payment_amount, car_price FROM $tableName WHERE payment_reference = ?";
             $checkStmt = $conn->prepare($checkSql);
             if (!$checkStmt || !$checkStmt->execute([$paymentReference])) {
                 throw new Exception("Failed to check transaction status");
@@ -167,14 +167,42 @@ try {
             if (!$transaction) {
                 throw new Exception("No transaction found with reference: " . $paymentReference);
             }
-            
-            if ($transaction['payment_status'] !== 'pending') {
-                error_log("Warning: Transaction " . $paymentReference . " is not in pending state (current: " . $transaction['payment_status'] . ")");
+
+            // Determine the new payment status
+            $newPaymentStatus = 'paid';
+            $newCarStatus = 'reserved';
+            $totalAmount = floatval($amount); // Default to new payment amount
+
+            // For reservations with full payment type, check if this is the remaining balance
+            if ($transactionType === 'reservation' && 
+                $transaction['reservation_type'] === 'full') {
+                
+                // Get the car price from the cars table
+                $carSql = "SELECT price FROM cars WHERE id = ?";
+                $carStmt = $conn->prepare($carSql);
+                $carStmt->execute([$transaction['car_id']]);
+                $car = $carStmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($car) {
+                    $carPrice = floatval($car['price']);
+                    $currentPayment = floatval($transaction['payment_amount']);
+                    $newPayment = floatval($amount);
+                    $totalAmount = $currentPayment + $newPayment; // Calculate total amount paid
+                    
+                    error_log("Payment details - Car Price: $carPrice, Current Payment: $currentPayment, New Payment: $newPayment, Total Amount: $totalAmount");
+                    
+                    // If total amount matches car price (within 0.01 for float comparison)
+                    if (abs($totalAmount - $carPrice) < 0.01) {
+                        $newPaymentStatus = 'completed';
+                        $newCarStatus = 'sold';
+                        error_log("Total amount matches car price - updating to completed status");
+                    }
+                }
             }
 
             // Update payment status
             $sql = "UPDATE $tableName SET
-                        payment_status = 'paid',
+                        payment_status = ?,
                         payment_amount = ?,
                         updated_at = NOW()
                     WHERE payment_reference = ?";
@@ -184,32 +212,32 @@ try {
                 throw new Exception("Database prepare failed");
             }
 
-            $stmt->bindValue(1, $amount, PDO::PARAM_STR);
-            $stmt->bindValue(2, $paymentReference, PDO::PARAM_STR);
+            $stmt->bindValue(1, $newPaymentStatus, PDO::PARAM_STR);
+            $stmt->bindValue(2, $totalAmount, PDO::PARAM_STR); // Use total amount
+            $stmt->bindValue(3, $paymentReference, PDO::PARAM_STR);
             
             if (!$stmt->execute()) {
                 throw new Exception("Failed to update payment status");
             }
 
-            error_log("Payment status updated successfully for payment reference: {$paymentReference}");
+            error_log("Payment status updated successfully for payment reference: {$paymentReference} to status: {$newPaymentStatus} with total amount: {$totalAmount}");
             
-            // Update car status based on transaction type
+            // Update car status
             if ($transaction['car_id']) {
-                $newStatus = $transactionType === 'purchase' ? 'sold' : 'reserved';
                 $updateCarSql = "UPDATE cars SET status = ? WHERE id = ?";
                 $updateCarStmt = $conn->prepare($updateCarSql);
                 if (!$updateCarStmt) {
                     throw new Exception("Failed to prepare car update statement");
                 }
 
-                $updateCarStmt->bindValue(1, $newStatus, PDO::PARAM_STR);
+                $updateCarStmt->bindValue(1, $newCarStatus, PDO::PARAM_STR);
                 $updateCarStmt->bindValue(2, $transaction['car_id'], PDO::PARAM_INT);
                 
                 if (!$updateCarStmt->execute()) {
                     throw new Exception("Failed to update car status");
                 }
 
-                error_log("Car status updated to {$newStatus} for car_id: " . $transaction['car_id']);
+                error_log("Car status updated to {$newCarStatus} for car_id: " . $transaction['car_id']);
             }
         }
     }
