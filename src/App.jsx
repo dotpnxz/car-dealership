@@ -39,6 +39,7 @@ import CarLoanStatus from './components/CarLoanStatus';
 import CarLoanManagement from './components/CarLoanManagement'; // Import CarLoanManagement
 import MyPurchases from './components/MyPurchases';
 import BuyNow from './components/BuyNow';
+import SalesReport from './components/SalesReport';
 
 const MainContent = () => {
     const location = useLocation();
@@ -102,6 +103,11 @@ const MainContent = () => {
                             }>
                                 <Route index element={<AdminDashboard />} />
                                 <Route path="announcements" element={<Announcements />} /> {/* Add Announcements route */}
+                                <Route path="report" element={
+                                    <ProtectedRoute requiredRole="admin">
+                                        <SalesReport />
+                                    </ProtectedRoute>
+                                } />
                             </Route>
 
                             {/* Independent Admin Routes */}
@@ -144,6 +150,11 @@ const MainContent = () => {
                             }>
                                 <Route index element={<StaffDashboard />} />
                                 <Route path="announcements" element={<Announcements />} />
+                                <Route path="report" element={
+                                    <ProtectedRoute requiredRole="staff">
+                                        <SalesReport />
+                                    </ProtectedRoute>
+                                } />
                             </Route>
 
                              {/* Independent Staff Routes */}
@@ -155,6 +166,11 @@ const MainContent = () => {
                              <Route path="/staff/manage-cars" element={
                                 <ProtectedRoute requiredRole="staff">
                                     <CarManagement />
+                                </ProtectedRoute>
+                            } />
+                             <Route path="/staff/car-loan-management" element={
+                                <ProtectedRoute requiredRole="staff">
+                                    <CarLoanManagement />
                                 </ProtectedRoute>
                             } />
                             <Route path="/staff/manage-bookings" element={

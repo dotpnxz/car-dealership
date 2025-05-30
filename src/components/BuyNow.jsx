@@ -191,7 +191,7 @@ const BuyNow = () => {
             setShowPayment(false);
             setPurchase(null);
           }}
-          purchase={purchase}
+          reservation={purchase}
         />
       )}
     </div>

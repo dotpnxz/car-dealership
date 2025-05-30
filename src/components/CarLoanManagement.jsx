@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Removed html2canvas and jspdf imports
-// import html2canvas from 'html2canvas';
-// import jsPDF from 'jspdf';
+
 
 // Import the utility function
 import { handleDownloadPdf } from '../utils/pdfGenerator';

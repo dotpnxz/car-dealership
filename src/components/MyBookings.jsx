@@ -65,7 +65,7 @@ const MyBookings = () => {
     return (
         <div className="p-8">
             <div className="max-w-6xl mx-auto">
-                <h2 className="text-2xl font-bold mb-6">My Bookings</h2>
+                <h2 className="text-2xl font-bold mb-6">My Test Drive Schedule</h2>
                 {error && (
                     <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
                         {error}

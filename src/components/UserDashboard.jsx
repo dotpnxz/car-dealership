@@ -81,7 +81,7 @@ const UserDashboard = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-4">
                     <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
                         <div className="text-lg sm:text-xl font-bold text-blue-600">{stats.total_bookings}</div>
-                        <div className="text-xs sm:text-sm text-gray-600">Total Bookings</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Total Test Drives</div>
                     </div>
                     <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
                         <div className="text-lg sm:text-xl font-bold text-green-600">{stats.total_reservations}</div>
@@ -89,7 +89,7 @@ const UserDashboard = () => {
                     </div>
                     <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
                         <div className="text-lg sm:text-xl font-bold text-yellow-600">{stats.pending_bookings}</div>
-                        <div className="text-xs sm:text-sm text-gray-600">Pending Bookings</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Pending Test Drives</div>
                     </div>
                     <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
                         <div className="text-lg sm:text-xl font-bold text-purple-600">{stats.approved_reservations}</div>
@@ -97,7 +97,7 @@ const UserDashboard = () => {
                     </div>
                     <div className="bg-white overflow-hidden shadow-sm rounded-lg p-3 sm:p-4">
                         <div className="text-lg sm:text-xl font-bold text-indigo-600">{stats.today_bookings}</div>
-                        <div className="text-xs sm:text-sm text-gray-600">Today's Bookings</div>
+                        <div className="text-xs sm:text-sm text-gray-600">Today's Test Drives</div>
                     </div>
                 </div>
 
@@ -131,7 +131,7 @@ const UserDashboard = () => {
                                 <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                <span className="text-sm sm:text-base">View Bookings</span>
+                                <span className="text-sm sm:text-base">View Test Drive Schedule</span>
                             </li>
                             <li 
                                 className="flex items-center text-gray-600 cursor-pointer hover:text-blue-500 p-2 rounded-lg hover:bg-gray-50 active:bg-gray-100"

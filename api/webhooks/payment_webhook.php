@@ -157,7 +157,12 @@ try {
             $tableName = $transactionType === 'purchase' ? 'purchases' : 'reserved_cars';
             
             // First verify the transaction exists and get its details
-            $checkSql = "SELECT id, payment_status, car_id, reservation_type, payment_amount, car_price FROM $tableName WHERE payment_reference = ?";
+            if ($transactionType === 'purchase') {
+                $checkSql = "SELECT id, payment_status, car_id, payment_amount FROM purchases WHERE payment_reference = ?";
+            } else {
+                $checkSql = "SELECT id, payment_status, car_id, reservation_type, payment_amount, car_price FROM reserved_cars WHERE payment_reference = ?";
+            }
+
             $checkStmt = $conn->prepare($checkSql);
             if (!$checkStmt || !$checkStmt->execute([$paymentReference])) {
                 throw new Exception("Failed to check transaction status");
@@ -170,7 +175,7 @@ try {
 
             // Determine the new payment status
             $newPaymentStatus = 'paid';
-            $newCarStatus = 'reserved';
+            $newCarStatus = $transactionType === 'purchase' ? 'sold' : 'reserved'; // Set status based on transaction type
             $totalAmount = floatval($amount); // Default to new payment amount
 
             // For reservations with full payment type, check if this is the remaining balance
@@ -182,7 +187,6 @@ try {
                 $carStmt = $conn->prepare($carSql);
                 $carStmt->execute([$transaction['car_id']]);
                 $car = $carStmt->fetch(PDO::FETCH_ASSOC);
-                
                 if ($car) {
                     $carPrice = floatval($car['price']);
                     $currentPayment = floatval($transaction['payment_amount']);

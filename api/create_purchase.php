@@ -127,8 +127,4 @@ try {
         'error' => $e->getMessage()
     ]);
 }
-
-if (isset($conn)) {
-    $conn->close();
-}
 ?> 

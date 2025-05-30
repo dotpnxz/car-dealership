@@ -71,21 +71,15 @@ const AdminDashboard = () => {
                         <p className="text-2xl sm:text-3xl font-bold text-green-600">{stats.approvedReservations}</p>
                     </div>
                     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-700">Total Revenue</h3>
-                         <p className="text-2xl sm:text-3xl font-bold text-indigo-600">
-                            ₱{(stats?.totalRevenue || 0).toLocaleString()}
-                        </p>
-                    </div>
-                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-700">Total Bookings</h3>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-700">Total Test Drives</h3>
                         <p className="text-2xl sm:text-3xl font-bold text-blue-600">{stats.totalBookings}</p>
                     </div>
                     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-700">Pending Bookings</h3>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-700">Pending Test Drives</h3>
                         <p className="text-2xl sm:text-3xl font-bold text-yellow-600">{stats.pendingBookings}</p>
                     </div>
                     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-700">Today's Bookings</h3>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-700">Today's Test Drives</h3>
                         <p className="text-2xl sm:text-3xl font-bold text-purple-600">{stats.todayBookings}</p>
                     </div>
                     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
@@ -107,8 +101,8 @@ const AdminDashboard = () => {
                         to="/admin/bookings" 
                         className="bg-white p-4 sm:p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow active:bg-gray-50"
                     >
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Booking Management</h3>
-                        <p className="text-sm sm:text-base text-gray-600">View and manage bookings</p>
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Test Drive Schedule</h3>
+                        <p className="text-sm sm:text-base text-gray-600">View and manage test drive schedules</p>
                     </Link>
                 </div>
             </div>

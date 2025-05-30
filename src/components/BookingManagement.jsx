@@ -109,10 +109,10 @@ const BookingManagement = () => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to update booking status');
+                throw new Error(data.error || 'Failed to update test drive status');
             }
 
-            setSuccessMessage('Booking status updated successfully');
+            setSuccessMessage('Test drive status updated successfully');
             setShowSuccess(true);
             fetchBookings();
         } catch (error) {
@@ -149,7 +149,7 @@ const BookingManagement = () => {
                 throw new Error(data.error || 'Failed to cancel booking');
             }
 
-            setSuccessMessage('Booking cancelled successfully');
+            setSuccessMessage('test drive cancelled successfully');
             setShowSuccess(true);
             setShowCancelModal(false);
             setCancellationReason('');
@@ -170,7 +170,7 @@ const BookingManagement = () => {
 
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.error || 'Failed to fetch booking details');
+                throw new Error(data.error || 'Failed to fetch test drive details');
             }
 
             const data = await response.json();
@@ -199,10 +199,10 @@ const BookingManagement = () => {
 
             if (!response.ok) {
                 const data = await response.json();
-                throw new Error(data.error || 'Failed to assign booking');
+                throw new Error(data.error || 'Failed to assign test drive');
             }
 
-            setSuccessMessage('Booking assigned successfully');
+            setSuccessMessage('test drive assigned successfully');
             setShowSuccess(true);
             setTimeout(() => {
                 setShowSuccess(false);
@@ -329,7 +329,7 @@ const BookingManagement = () => {
             <div className="max-w-7xl mx-auto">
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Booking Management</h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Test Drive Schedule</h1>
                     
                     {/* Filter Controls - Stack on mobile */}
                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -512,7 +512,7 @@ const BookingManagement = () => {
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full p-4">
                         <div className="relative top-20 mx-auto p-4 sm:p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium">Booking Details</h3>
+                                <h3 className="text-lg font-medium">Test Drive Details</h3>
                                 <button onClick={() => setShowDetailsModal(false)} className="text-gray-400 hover:text-gray-500">
                                     ×
                                 </button>
@@ -529,7 +529,7 @@ const BookingManagement = () => {
                                 
                                 </div>
                                 <div>
-                                    <h4 className="font-medium text-gray-700">Booking Details</h4>
+                                    <h4 className="font-medium text-gray-700">Test Drive Details</h4>
                                     <p className="text-sm text-gray-600">Date: {formatDate(selectedBooking.booking_date)}</p>
                                     <p className="text-sm text-gray-600">Status: {selectedBooking.status}</p>
                                     <p className="text-sm text-gray-600">Reason: {selectedBooking.cancellation_reason}</p>
@@ -553,7 +553,7 @@ const BookingManagement = () => {
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
                         <div className="relative top-20 mx-auto p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium">Assign Booking</h3>
+                                <h3 className="text-lg font-medium">Assign Test Drive</h3>
                                 <button 
                                     onClick={() => setShowAssignModal(false)}
                                     className="text-gray-400 hover:text-gray-500"
@@ -563,7 +563,7 @@ const BookingManagement = () => {
                             </div>
                             <div className="space-y-4">
                                 <p className="text-sm text-gray-600">
-                                    Assign booking for {selectedBookingForAssignment.car_model} to:
+                                    Assign test drive for {selectedBookingForAssignment.car_model} to:
                                 </p>
                                 <select
                                     className="w-full border rounded px-3 py-2"
@@ -586,7 +586,7 @@ const BookingManagement = () => {
                     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
                         <div className="relative top-20 mx-auto p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium">Cancel Booking</h3>
+                                <h3 className="text-lg font-medium">Cancel Test Drive</h3>
                                 <button 
                                     onClick={() => {
                                         setShowCancelModal(false);

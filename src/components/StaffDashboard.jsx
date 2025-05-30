@@ -94,21 +94,15 @@ const StaffDashboard = () => {
                         <p className="text-3xl font-bold text-green-600">{stats.approvedReservations}</p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold text-gray-700">Total Revenue</h3>
-                        <p className="text-3xl font-bold text-indigo-600">
-                            ₱{(stats?.totalRevenue || 0).toLocaleString()}
-                        </p>
-                    </div>
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold text-gray-700">Total Bookings</h3>
+                        <h3 className="text-lg font-semibold text-gray-700">Total Test Drives</h3>
                         <p className="text-3xl font-bold text-blue-600">{stats.totalBookings}</p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold text-gray-700">Assigned Bookings</h3>
+                        <h3 className="text-lg font-semibold text-gray-700">Assigned Test Drives</h3>
                         <p className="text-3xl font-bold text-blue-600">{stats.assignedBookings}</p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold text-gray-700">Today's Bookings</h3>
+                        <h3 className="text-lg font-semibold text-gray-700">Today's Test Drives</h3>
                         <p className="text-3xl font-bold text-purple-600">{stats.todayBookings}</p>
                     </div>
                 </div>
@@ -119,8 +113,8 @@ const StaffDashboard = () => {
                         <p className="text-gray-600">Manage car inventory and availability</p>
                     </Link>
                     <Link to="/staff/manage-bookings" className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                        <h3 className="text-xl font-semibold text-gray-800 mb-2">Booking Management</h3>
-                        <p className="text-gray-600">View and manage bookings</p>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-2">Test Drive Schedule</h3>
+                        <p className="text-gray-600">View and manage test drive schedules</p>
                     </Link>
                 </div>
             </div>
