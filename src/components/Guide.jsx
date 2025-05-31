@@ -20,7 +20,9 @@ const Guide = () => {
                 { title: 'Price List', path: '/collection' },
                 { title: 'Payment Calculator', path: '/collection' },
                 { title: 'Loan Requirements', path: '/loan-requirements' },
-                { title: 'How To Avail', path: '/avail-process' } // Add this new link
+                { title: 'How To Avail', path: '/avail-process' }, // Add this new link
+                { title:  'Reserving Process', path: '/reserve-process'},
+                { title:  'Buying Process', path: '/buy-process'}
             ]
         },
         'Discover MJ-AUTOLOVE': {

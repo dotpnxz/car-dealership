@@ -104,6 +104,7 @@ try {
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['username'] = $user['username'];
     $_SESSION['accountType'] = $user['accountType'];
+    $_SESSION['is_admin'] = ($user['accountType'] === 'admin');
 
     // Debug: Log session data
     error_log("Login successful. Session data: " . print_r($_SESSION, true));

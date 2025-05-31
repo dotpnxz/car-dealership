@@ -10,16 +10,17 @@ const AdminDashboard = () => {
         todayBookings: 0,
         totalReservations: 0,
         approvedReservations: 0,
-        pendingReservations: 0,  // Add this line
+        pendingReservations: 0,
         totalRevenue: 0,
     });
+    const [restoreMessage, setRestoreMessage] = useState(null);
+
+    // Determine API base URL based on environment
+    const API_BASE_URL = window.location.hostname === 'localhost'
+        ? 'http://localhost/car-dealership/api'
+        : 'https://mjautolove.site/api';
 
     useEffect(() => {
-        // Determine API base URL based on environment
-        const API_BASE_URL = window.location.hostname === 'localhost'
-            ? 'http://localhost/car-dealership/api'
-            : 'https://mjautolove.site/api';
-
         // Fetch dashboard statistics
         const fetchStats = async () => {
             try {
@@ -46,6 +47,70 @@ const AdminDashboard = () => {
 
         fetchStats();
     }, []);
+
+    const handleBackup = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/backup_database.php`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Backup failed');
+            }
+
+            // Get the filename from the Content-Disposition header
+            const contentDisposition = response.headers.get('Content-Disposition');
+            const filename = contentDisposition
+                ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+                : 'backup.sql';
+
+            // Create a blob from the response
+            const blob = await response.blob();
+            
+            // Create a download link
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Error creating backup:', error);
+            alert('Failed to create backup. Please try again.');
+        }
+    };
+
+    const handleRestore = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('sqlfile', file);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/restore_database.php`, {
+                method: 'POST',
+                credentials: 'include',
+                body: formData
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                setRestoreMessage({ type: 'success', text: data.message });
+            } else {
+                setRestoreMessage({ type: 'error', text: data.error || 'Restore failed' });
+            }
+        } catch (error) {
+            console.error('Error restoring database:', error);
+            setRestoreMessage({ type: 'error', text: 'Failed to restore database. Please try again.' });
+        }
+
+        // Clear the file input
+        event.target.value = '';
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 p-4 sm:p-8">
@@ -104,6 +169,37 @@ const AdminDashboard = () => {
                         <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Test Drive Schedule</h3>
                         <p className="text-sm sm:text-base text-gray-600">View and manage test drive schedules</p>
                     </Link>
+                    <button 
+                        onClick={handleBackup}
+                        className="bg-white p-4 sm:p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow active:bg-gray-50 text-left"
+                    >
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Database Backup</h3>
+                        <p className="text-sm sm:text-base text-gray-600">Create a backup of the entire database</p>
+                    </button>
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow active:bg-gray-50">
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Database Restore</h3>
+                        <p className="text-sm sm:text-base text-gray-600 mb-4">Restore database from a backup file</p>
+                        <input
+                            type="file"
+                            accept=".sql"
+                            onChange={handleRestore}
+                            className="hidden"
+                            id="restore-file"
+                        />
+                        <label
+                            htmlFor="restore-file"
+                            className="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer"
+                        >
+                            Choose File
+                        </label>
+                        {restoreMessage && (
+                            <div className={`mt-2 p-2 rounded ${
+                                restoreMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                            }`}>
+                                {restoreMessage.text}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
